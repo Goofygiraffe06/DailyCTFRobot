@@ -51,7 +51,7 @@ git clone https://github.com/YOUR_USERNAME/DailyCTFRobot.git
 
 ## Support & Contributions
 
-We warmly welcome and sincerely appreciate contributions from the community! From bug fixes, documentation enhancements to feature suggestions, your collaboration will make DailyCTF Bot more efficient and powerful. For more intricate details on how to contribute, please check out our [contribution guide](CONTRIBUTING.md).
+We warmly welcome and sincerely appreciate contributions from the community! From bug fixes, documentation enhancements to feature suggestions, your collaboration will make DailyCTF Bot more efficient and powerful.
 
 ## License
 

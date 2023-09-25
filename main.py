@@ -205,7 +205,8 @@ class LeaderboardChannelSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         self.view.value = self.values[0]
-        config["leaderboard_channel_id"] = self.values[0]
+        config["leaderboard_channel_id"] = int(self.values[0])
+        save_config()
         self.view.channel_selected = True
         await interaction.response.send_message(f"Selected Leaderboard Channel: <#{self.values[0]}>", ephemeral=True)
 
@@ -478,7 +479,7 @@ async def shutdown(interaction: discord.Interaction):
         return
 
     position_emojis = ["🥇", "🥈", "🥉"]
-    challenge_channel = bot.get_channel(int(config["channel_id"]))
+    challenge_channel = bot.get_channel(int(config["leaderboard_channel_id"]))
 
     # Print leaderboard
     if challenge_data["leaderboard"]:
@@ -488,8 +489,9 @@ async def shutdown(interaction: discord.Interaction):
 
     # Print the correct answer
     await challenge_channel.send(
-        f"Correct answer for Day-{challenge_data['day']} was: `{challenge_data['answer']}`"
-    )
+        f"Correct answer for Day-{challenge_data['day']} was: `{challenge_data['answer']}`")
+    await challenge_channel.send(
+        f"Official Writeup: `{challenge_data['writeup']}`")
 
     # Reset challenge data
     save_challenge_data({})

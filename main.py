@@ -367,7 +367,13 @@ async def end_challenge():
     await challenge_channel.send(f"Day-{challenge_data['day']} Challenge has finished!")
     logging.info(f"Day-{challenge_data['day']}challenge has been finished...")
     await challenge_channel.send(
-        f"The answer for Day-{challenge_data['day']} was: ||`{challenge_data['answer']}`||"
+    f"The answer for Day-{challenge_data['day']} was: ||`{challenge_data['answer']}`||")
+
+# Check if a write-up exists and then send the appropriate message
+    if 'writeup' in challenge_data and challenge_data['writeup']:
+      await challenge_channel.send(f"Writeup for Day-{challenge_data['day']}: {challenge_data['writeup']}")
+    else:
+      await challenge_channel.send("No writeup provided for Day-{challenge_data['day']}.")
     )
 
     # reset challenge data

@@ -346,7 +346,7 @@ async def display_leaderboard():
     for i, (user_id, _) in enumerate(sorted_leaderboard[:3]):
         user = bot.get_user(int(user_id))
         leaderboard_msg += f"{position_emojis[i]} {user.name}\n"
-    challenge_channel = bot.get_channel(int(config["leaderboard_channel_id"]))
+    challenge_channel = bot.get_channel(int(config["channel_id"]))
     await challenge_channel.send(leaderboard_msg.format(day=challenge_data["day"]))
 
 

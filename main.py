@@ -301,7 +301,7 @@ class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
         save_challenge_data(challenge_data)
 
         formatted_message = (
-            f"**Day-{challenge_data['day']} Challenge by {interaction.user.name}:**\n"
+            f"@everyone\n**Day-{challenge_data['day']} Challenge by {interaction.user.name}:**\n"
             f"`{challenge_data['desc']}`"
         )
         challenge_channel = bot.get_channel(int(config["channel_id"]))

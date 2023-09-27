@@ -36,6 +36,8 @@ DailyCTF Bot is an advanced Discord bot tailored for the [DailyCTF server](https
 
 - **Server Resilience**: Incorporates `keep_alive` to remain continuously active. Built-in error handling and rate-limit awareness for uninterrupted operation.
 
+> This bot is designed for a single server use only and requires self-hosting. For detailed hosting instructions, please visit [my blog](https://goofygiraffe06.github.io/discord_bot). 
+
 ## Getting Started
 
 1. **Fork the Repository**: Start by creating a personal fork of this repository. 

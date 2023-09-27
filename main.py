@@ -574,22 +574,24 @@ async def timeleft(interaction: discord.Interaction):
         await interaction.response.send_message(
             "The challenge has already ended.", ephemeral=True
         )
-    else:
+        return
+
+    if challenge_data.get("leaderboard", {}) and not challenge_data.get("hints_revealed", False):
+        hint_msg = "Hint will no longer be printed since someone has already solved the challenge."
+    elif current_time < hint_time:
         hours_hint, remainder_hint = divmod(time_to_hint.total_seconds(), 3600)
         minutes_hint, seconds_hint = divmod(remainder_hint, 60)
-        hint_msg = (
-            f"Time left for hint: {int(hours_hint)}:{int(minutes_hint):02}:{int(seconds_hint):02}"
-            if current_time < hint_time
-            else "Hint has been released!"
-        )
+        hint_msg = f"Time left for hint: {int(hours_hint)}:{int(minutes_hint):02}:{int(seconds_hint):02}"
+    else:
+        hint_msg = "Hint has been released!"
 
-        hours_end, remainder_end = divmod(time_to_end.total_seconds(), 3600)
-        minutes_end, seconds_end = divmod(remainder_end, 60)
-        end_msg = f"Time left for challenge end: {int(hours_end)}:{int(minutes_end):02}:{int(seconds_end):02}"
+    hours_end, remainder_end = divmod(time_to_end.total_seconds(), 3600)
+    minutes_end, seconds_end = divmod(remainder_end, 60)
+    end_msg = f"Time left for challenge end: {int(hours_end)}:{int(minutes_end):02}:{int(seconds_end):02}"
 
-        await interaction.response.send_message(
-            f"{hint_msg}\n{end_msg}", ephemeral=True
-        )
+    await interaction.response.send_message(
+        f"{hint_msg}\n{end_msg}", ephemeral=True
+    )
 
 
 @bot.tree.command(name="ping", description="Check if the bot is alive or not.")

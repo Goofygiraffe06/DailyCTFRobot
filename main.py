@@ -374,7 +374,6 @@ async def end_challenge():
       await challenge_channel.send(f"Writeup for Day-{challenge_data['day']}: {challenge_data['writeup']}")
     else:
       await challenge_channel.send("No writeup provided for Day-{challenge_data['day']}.")
-    )
 
     # reset challenge data
     save_challenge_data({})

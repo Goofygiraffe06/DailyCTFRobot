@@ -345,7 +345,7 @@ async def display_leaderboard():
     leaderboard_msg = "🏆 **The winners of today's CTF (Day-{day}) are:** 🏆\n"
     for i, (user_id, _) in enumerate(sorted_leaderboard[:3]):
         user = bot.get_user(int(user_id))
-        leaderboard_msg += f"{position_emojis[i]} {user.name}\n"
+        leaderboard_msg += f"{position_emojis[i]} {user.mention}\n"
     challenge_channel = bot.get_channel(int(config["channel_id"]))
     await challenge_channel.send(leaderboard_msg.format(day=challenge_data["day"]))
 

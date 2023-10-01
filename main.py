@@ -1,6 +1,5 @@
 import discord
 import json
-import logging
 from discord.ext import commands, tasks
 import random
 import datetime
@@ -9,11 +8,17 @@ import time
 from discord import app_commands
 from keep_alive import keep_alive
 import os
+import logging.handlers
 
-# Initialize logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s"
-)
+# Define the rotating log handler
+logHandler = logging.handlers.RotatingFileHandler('bot.log', maxBytes=1e6, backupCount=5)  # Max size = 1MB
+logFormatter = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
+logHandler.setFormatter(logFormatter)
+
+rootLogger = logging.getLogger()
+rootLogger.addHandler(logHandler)
+rootLogger.setLevel(logging.INFO)
+
 # Stopping keep_alive log messages as they make hard to read and are useless
 # Suppress Flask development server log
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
@@ -157,6 +162,22 @@ def save_config():
     with open("config.json", "w") as config_file:
         json.dump(config, config_file)
 
+
+@bot.tree.command(name="getlogs", description="Fetch the latest logs for the challenge")
+async def fetch_logs(interaction: discord.Interaction):
+    # Check if the user has the "ctf_creators" role
+    if discord.utils.get(interaction.guild.roles, id=int(config["ctf_creators"])) not in interaction.user.roles:
+        await interaction.response.send_message("You don't have permission to fetch the logs!", ephemeral=True)
+        return
+
+    try:
+        await interaction.response.send_message("Fetching logs...", ephemeral=True)
+        with open("bot.log", 'rb') as log_file:
+            await interaction.user.send("Here are the latest logs:", file=discord.File(log_file))
+        logging.info(f"Logs sent to user: {interaction.user.name}")
+    except Exception as e:
+        logging.error(f"Error sending log file: {e}")
+        await interaction.response.send_message("Error fetching logs. Please try again later.", ephemeral=True)
 
 # Create a select menu for roles
 class RoleSelect(discord.ui.Select):
@@ -496,7 +517,7 @@ async def shutdown(interaction: discord.Interaction):
     await challenge_channel.send(
         f"Correct answer for Day-{challenge_data['day']} was: `{challenge_data['answer']}`")
     await challenge_channel.send(
-        f"Official Writeup: `{challenge_data['writeup']}`")
+        f"Official Writeup: ```{challenge_data['writeup']}```")
 
     # Reset challenge data
     save_challenge_data({})

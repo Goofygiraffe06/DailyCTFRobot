@@ -709,6 +709,7 @@ async def help_command(interaction: discord.Interaction):
     `/setchallenge` - Create a new challenge.
     `/shutdown` - Shutdown the active challenge.
     `/setup` - Setup bot settings for the server.
+    '/getlogs' - Fetches logs.
     """
     embed.add_field(
         name="Admin Commands (for CTF creators)", value=admin_commands, inline=False

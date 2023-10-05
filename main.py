@@ -441,6 +441,7 @@ async def submit(interaction: discord.Interaction, flag: str):
                     ephemeral=True,
                 )
                 await display_leaderboard()
+                logging.info("Function display_leaderboard started.")
 
             else:
                 await interaction.response.send_message(

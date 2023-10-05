@@ -250,7 +250,7 @@ class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
         style=discord.TextStyle.long,
         label="Description",
         required=True,
-        max_length=500,
+        max_length=2000,
         placeholder="Description of the challenge",
     )
 

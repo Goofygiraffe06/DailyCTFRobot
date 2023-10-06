@@ -19,9 +19,6 @@ logging.basicConfig(
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logging.getLogger("flask.app").setLevel(logging.ERROR)
 
-# channel id for feedback
-FEEDBACK_CHANNEL_ID = 914495197256228961
-
 # Load bot configuration from JSON
 with open("config.json", "r") as config_file:
     config = json.load(config_file)
@@ -632,7 +629,7 @@ class FeedbackModal(discord.ui.Modal, title="Send us your feedback"):
     )
 
     async def on_submit(self, interaction: discord.Interaction):
-        channel = interaction.guild.get_channel(FEEDBACK_CHANNEL_ID)
+        channel = interaction.client.get_guild(914495197256228954).get_channel(914495197256228961) 
 
         embed = discord.Embed(
             title=f"New Feedback: {self.fb_title.value}",

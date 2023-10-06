@@ -151,6 +151,7 @@ async def on_ready():
         logging.error(e)
     bot.loop.create_task(end_challenge())
     await change_activity.start()
+    
 
 
 def save_config():
@@ -263,6 +264,7 @@ class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
 
     hints_input = discord.ui.TextInput(
         style=discord.TextStyle.short,
+      
         label="Hints",
         required=True,
         placeholder="Hints for the challenge",
@@ -374,7 +376,11 @@ async def end_challenge():
       await challenge_channel.send(f"Writeup for Day-{challenge_data['day']}: {challenge_data['writeup']}")
     else:
       await challenge_channel.send(f"No writeup provided for Day-{challenge_data['day']}.")
-
+    avg = calculate_average_rating()
+    if avg is not None:
+        await challenge_channel.send(f"The average rating for the challenge is: {avg:.2f}")
+    else:
+        await challenge_channel.send("No ratings received for the challenge.")
     # reset challenge data
     save_challenge_data({})
 
@@ -659,6 +665,59 @@ async def _feedback(interaction: discord.Interaction):
     modal = FeedbackModal()
     await interaction.response.send_modal(modal)
 
+class RateButton(discord.ui.Button):
+    def __init__(self, rating: int):
+        super().__init__(label=str(rating), custom_id=f'rate_{rating}')
+        self.rating = rating
+
+    async def callback(self, interaction: discord.Interaction):
+        user_id = str(interaction.user.id)
+        challenge_data = load_challenge_data()
+
+        # Check if user has already rated
+        for rate in challenge_data.get('ratings', []):
+            if rate['user'] == user_id:
+                await interaction.response.send_message('You have already rated this challenge!', ephemeral=True)
+                return
+
+        challenge_data.setdefault('ratings', []).append({
+            'user': user_id,
+            'rating': self.rating
+        })
+        save_challenge_data(challenge_data)
+
+        await interaction.response.send_message(f'You rated the challenge {self.rating} stars!', ephemeral=True)
+
+class RateView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=60)
+        for i in range(1, 6):
+            self.add_item(RateButton(rating=i))
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return True
+
+
+def calculate_average_rating():
+    challenge_data = load_challenge_data()
+    
+    if "ratings" not in challenge_data or not challenge_data["ratings"]:
+        return None
+
+    total_ratings = sum(rate['rating'] for rate in challenge_data["ratings"])
+    average_rating = total_ratings / len(challenge_data["ratings"])
+    return average_rating
+
+
+@bot.tree.command(name="rate", description="Rate the challenge out of 5.")
+async def rate_challenge(interaction: discord.Interaction):
+    challenge_data = load_challenge_data()
+    if not challenge_data:
+      await interaction.response.send_message("No active challenge currently!", ephemeral=True)
+      return
+  
+    view = RateView()
+    await interaction.response.send_message("Rate today's challenge:", view=view, ephemeral=True)
 
 # Overriding default discord help messsage for our very own embeded one.
 bot.remove_command("help")

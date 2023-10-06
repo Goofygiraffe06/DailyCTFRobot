@@ -740,6 +740,7 @@ async def help_command(interaction: discord.Interaction):
     `/submit <flag>` - Submit the CTF flag.
     `/timeleft` - Tells the time left for the hint and the challenge end.
     `/feedback` - Submit feedback, bugs, or suggestions.
+    `/rate` - Rate an active challenge.
     """
     embed.add_field(name="General Commands", value=general_commands, inline=False)
 

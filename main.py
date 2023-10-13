@@ -40,7 +40,7 @@ def load_challenge_data():
 # Save challenge data to a file
 def save_challenge_data(data):
     with open("challenge_data.txt", "w") as file:
-        json.dump(data, file)
+        json.dump(data, file, indent=4)
     logging.info("Challenge data saved successfully.")
 
 

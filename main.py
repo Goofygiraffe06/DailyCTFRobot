@@ -677,12 +677,6 @@ class RateButton(discord.ui.Button):
         user_id = str(interaction.user.id)
         challenge_data = load_challenge_data()
 
-        # Check if user has already rated
-        for rate in challenge_data.get('ratings', []):
-            if rate['user'] == user_id:
-                await interaction.response.send_message('You have already rated this challenge!', ephemeral=True)
-                return
-
         challenge_data.setdefault('ratings', []).append({
             'user': user_id,
             'rating': self.rating
@@ -711,16 +705,20 @@ def calculate_average_rating():
     average_rating = total_ratings / len(challenge_data["ratings"])
     return average_rating
 
+    @bot.tree.command(name="rate", description="Rate the challenge out of 5.")
+    async def rate_challenge(interaction: discord.Interaction):
+        challenge_data = load_challenge_data()
+        if not challenge_data:
+        await interaction.response.send_message("No active challenge currently!", ephemeral=True)
+        return
+        # Check if user has already rated
+        for rate in challenge_data.get('ratings', []):
+            if rate['user'] == str(interaction.user.id):
+                await interaction.response.send_message('You have already rated this challenge!', ephemeral=True)
+                return
+        view = RateView()
 
-@bot.tree.command(name="rate", description="Rate the challenge out of 5.")
-async def rate_challenge(interaction: discord.Interaction):
-    challenge_data = load_challenge_data()
-    if not challenge_data:
-      await interaction.response.send_message("No active challenge currently!", ephemeral=True)
-      return
-
-    view = RateView()
-    await interaction.response.send_message("Rate today's challenge:", view=view, ephemeral=True)
+        await interaction.response.send_message("Rate today's challenge:", view=view, ephemeral=True)
 
 # Overriding default discord help messsage for our very own embeded one.
 bot.remove_command("help")

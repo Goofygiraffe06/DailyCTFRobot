@@ -148,7 +148,7 @@ async def on_ready():
         logging.error(e)
     bot.loop.create_task(end_challenge())
     await change_activity.start()
-    
+
 
 
 def save_config():
@@ -219,7 +219,7 @@ class SetupView(discord.ui.View):
 
 @bot.tree.command(name="setup", description="Setup bot settings for the server.")
 async def setup(interaction: discord.Interaction):
-    
+
     # Check if the user has the "ctf_creators" role
     if discord.utils.get(interaction.guild.roles, id=int(1142485003264073869)) not in interaction.user.roles:
         await interaction.response.send_message("You don't have permission to use this command!", ephemeral=True)
@@ -261,7 +261,7 @@ class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
 
     hints_input = discord.ui.TextInput(
         style=discord.TextStyle.short,
-      
+
         label="Hints",
         required=True,
         placeholder="Hints for the challenge",
@@ -386,7 +386,8 @@ async def end_challenge():
 @app_commands.describe(flag="Enter your flag here.")
 async def submit(interaction: discord.Interaction, flag: str):
     challenge_data = load_challenge_data()
-
+    view = RateView()
+  
     if not challenge_data:
         await interaction.response.send_message(
             "There's no active challenge right now!", ephemeral=True
@@ -425,6 +426,7 @@ async def submit(interaction: discord.Interaction, flag: str):
                     "Incredible! You've stormed through the challenge and secured the top spot!",
                     ephemeral=True,
                 )
+                await interaction.followup.send("Rate today's challenge:", view=view, ephemeral=True)
 
             elif leaderboard_length == 1:
                 await challenge_channel.send(
@@ -434,6 +436,7 @@ async def submit(interaction: discord.Interaction, flag: str):
                     "Fantastic! You've secured the second top spot! Let's see who claims the last!",
                     ephemeral=True,
                 )
+                await interaction.followup.send("Rate today's challenge:", view=view, ephemeral=True)
 
             elif leaderboard_length == 2:
                 await challenge_channel.send(
@@ -443,14 +446,17 @@ async def submit(interaction: discord.Interaction, flag: str):
                     "Great job grabbing the third spot! Keep this energy up for the next challenges!",
                     ephemeral=True,
                 )
+                await interaction.followup.send("Rate today's challenge:", view=view, ephemeral=True)
+              
                 await display_leaderboard()
                 logging.info("Function display_leaderboard started.")
 
             else:
-                await interaction.response.send_message(
+                  await interaction.response.send_message(
                     f"Correct answer! You're in position {leaderboard_length + 1}. Push harder next time to claim a top spot!",
                     ephemeral=True,
                 )
+                  await interaction.followup.send("Rate today's challenge:", view=view, ephemeral=True)
 
         else:
             await interaction.response.send_message(
@@ -697,7 +703,7 @@ class RateView(discord.ui.View):
 
 def calculate_average_rating():
     challenge_data = load_challenge_data()
-    
+
     if "ratings" not in challenge_data or not challenge_data["ratings"]:
         return None
 
@@ -712,7 +718,7 @@ async def rate_challenge(interaction: discord.Interaction):
     if not challenge_data:
       await interaction.response.send_message("No active challenge currently!", ephemeral=True)
       return
-  
+
     view = RateView()
     await interaction.response.send_message("Rate today's challenge:", view=view, ephemeral=True)
 

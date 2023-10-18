@@ -59,7 +59,7 @@ These instructions will guide you on how to deploy and run the DailyCTF Robot on
 
 ### Installation
 
-##### Local Installation
+#### Local Installation
 
 1. **Clone the Repository**: 
 ```
@@ -81,7 +81,7 @@ echo token='<Your_Discord_Bot_Token_Here>' >> .env
 ```
 python main.py
 ```
-##### Replit Installation (Free 24/7)
+#### Replit Installation (Free 24/7)
 
 **1.Start a New Python Project**: On your Replit dashboard, click on the + button to create a new repl and select Python.
 **2.Import from GitHub**: On the Replit interface, you'll see an option to 'import from GitHub'. Enter the repository URL: `https://github.com/Goofygiraffe06/DailyCTFRobot.git`
@@ -94,7 +94,7 @@ pip install -r requirements.txt
 
 
 > [!IMPORTANT]
-> This bot is designed for a single server use only and requires self-hosting. For detailed hosting instructions, please visit [my blog](https://goofygiraffe06.github.io/discord_bot). 
+> This bot is designed for a single server use only and requires self-hosting. 
 
 ## Usage
 

@@ -84,12 +84,16 @@ python main.py
 #### Replit Installation (Free 24/7)
 
 **1.Start a New Python Project**: On your Replit dashboard, click on the + button to create a new repl and select Python.
+
 **2.Import from GitHub**: On the Replit interface, you'll see an option to 'import from GitHub'. Enter the repository URL: `https://github.com/Goofygiraffe06/DailyCTFRobot.git`
+
 **3. Configure Secrets**: On the left sidebar, you'll see an icon resembling a lock. Clicking on it and add a new secret with the secret name being 'token' and the key being Discord Bot Token.
+
 **4.Install Required Packages**: Once the code is imported, Replit should automatically recognize the requirements.txt file and install the necessary dependencies. If not, run this in the Replit shell:
 ```
 pip install -r requirements.txt
 ```
+
 **5.Run the bot**: Click on the green Run button at the top of your Replit environment. Your bot should now be active and visit [my blog](https://goofygiraffe06.github.io/discord_bot), If you want to learn how to keep it persistent.
 
 

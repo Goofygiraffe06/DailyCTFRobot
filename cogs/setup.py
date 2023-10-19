@@ -100,15 +100,8 @@ class Setup(commands.Cog):
       self.config.data = save_config({})
 
   @discord.app_commands.command(name="setup", description="Setup bot settings for the server.")
+  @has_permissions(administrator=True)
   async def setup(self, interaction: discord.Interaction) -> None:
-    # Check if the user has the "ctf_creators" role
-    if discord.utils.get(interaction.guild.roles, id=int(1152457126313197568)) not in interaction.user.roles:
-      await interaction.response.send_message("You don't have permission to use this command!", ephemeral=True)
-      logging.warning(
-          f"Unauthorized setup attempt by {interaction.user.name} (ID: {interaction.user.id}) in server: {interaction.guild.name} (ID: {interaction.guild.id})"
-      )
-      return
-
     logging.info(f"Setup command invoked by {interaction.user.name} (ID: {interaction.user.id}) in server: {interaction.guild.name} (ID: {interaction.guild.id})")
     roles = interaction.guild.roles
     channels = interaction.guild.channels
@@ -118,6 +111,14 @@ class Setup(commands.Cog):
       view=view, ephemeral=True
     )
 
+  @setup.error
+  async def setup_error(self, interaction, error):
+    if isinstance(error, CheckFailure):
+      await interaction.response.send_message("You don't have permission to use this command!", ephemeral=True)
+      logging.warning(
+          f"Unauthorized setup attempt by {interaction.user.name} (ID: {interaction.user.id}) in server: {interaction.guild.name} (ID: {interaction.guild.id})"
+      )
+      return
 
 async def setup(bot) -> None:
   await bot.add_cog(Setup(bot))

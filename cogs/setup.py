@@ -4,6 +4,7 @@ import discord
 from .utils import load_config, save_config
 from discord.ext import commands
 import logging
+from discord.ext.commands import has_permissions, CheckFailure
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO,

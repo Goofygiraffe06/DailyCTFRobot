@@ -6,6 +6,7 @@ from discord.ext import commands
 import os
 from keep_alive import keep_alive
 import asyncio
+import pyfiglet 
 
 # Initialize logging
 logging.basicConfig(
@@ -17,6 +18,9 @@ logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logging.getLogger("flask.app").setLevel(logging.ERROR)
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+
+os.system("clear")
+print(pyfiglet.figlet_format("DailyCTF Robot"))
 
 async def main():
     async with bot:

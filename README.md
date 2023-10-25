@@ -16,7 +16,7 @@
   </p>
 </p>
 
-![Contributors](https://img.shields.io/github/contributors/Goofygiraffe06/DailyCTFRobot?color=dark-green) ![Forks](https://img.shields.io/github/forks/Goofygiraffe06/DailyCTFRobot?style=social) ![Stargazers](https://img.shields.io/github/stars/Goofygiraffe06/DailyCTFRobot?style=social) ![Issues](https://img.shields.io/github/issues/Goofygiraffe06/DailyCTFRobot) ![License](https://img.shields.io/github/license/Goofygiraffe06/DailyCTFRobot) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md) 
+![Contributors](https://img.shields.io/github/contributors/Goofygiraffe06/DailyCTFRobot?color=dark-green) ![Forks](https://img.shields.io/github/forks/Goofygiraffe06/DailyCTFRobot?style=social) ![Stargazers](https://img.shields.io/github/stars/Goofygiraffe06/DailyCTFRobot?style=social) ![Issues](https://img.shields.io/github/issues/Goofygiraffe06/DailyCTFRobot) ![License](https://img.shields.io/github/license/Goofygiraffe06/DailyCTFRobot) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md) 
 
 ## Table Of Contents
 

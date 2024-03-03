@@ -1,7 +1,7 @@
 <br/>
 <p align="center">
   <a href="https://github.com/Goofygiraffe06/DailyCTFRobot">
-    <img src="https://media.discordapp.net/attachments/921381395442569236/1164140668818554882/Goofygiraffe06.gif" alt="Logo">
+    ![banner](https://github.com/Goofygiraffe06/DailyCTFRobot/assets/75793684/b762af36-eb78-4909-b949-527c35139bf6)
   </a>
 
   <h3 align="center">DailyCTF Robot</h3>
@@ -81,7 +81,7 @@ echo token='<Your_Discord_Bot_Token_Here>' >> .env
 ```
 python main.py
 ```
-#### Replit Installation (Free 24/7)
+#### [DEPRICATED] Replit Installation (Free 24/7)
 
 **1.Start a New Python Project**: On your Replit dashboard, click on the + button to create a new repl and select Python.
 

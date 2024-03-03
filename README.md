@@ -1,7 +1,7 @@
 <br/>
 <p align="center">
   <a href="https://github.com/Goofygiraffe06/DailyCTFRobot">
-    ![banner](https://github.com/Goofygiraffe06/DailyCTFRobot/assets/75793684/b762af36-eb78-4909-b949-527c35139bf6)
+    ![banner](./assets/banner.gif)
   </a>
 
   <h3 align="center">DailyCTF Robot</h3>

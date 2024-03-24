@@ -14,11 +14,8 @@ logging.basicConfig(level=logging.INFO,
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logging.getLogger("flask.app").setLevel(logging.ERROR)
 
-# Class responsible for creating a form (a.k.a. modal) for setchallenge command
-
 
 class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
-
   def __init__(self, bot, config):
     super().__init__()
     self.bot = bot
@@ -48,11 +45,11 @@ class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
 
   hints_input = discord.ui.TextInput(
       style=discord.TextStyle.short,
-
       label="Hints",
       required=True,
       placeholder="Hints for the challenge",
   )
+
   writeup_input = discord.ui.TextInput(
       style=discord.TextStyle.long,
       label="Write-up",
@@ -105,7 +102,6 @@ class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
 
 
 class AdminCommands(commands.Cog):
-
   def __init__(self, bot):
     self.bot = bot
     try:
@@ -116,19 +112,28 @@ class AdminCommands(commands.Cog):
   @discord.app_commands.command(name="setchallenge",
                                 description="Create a new challenge")
   async def setchallenge(self, interaction: discord.Interaction) -> None:
-    if discord.utils.get(
-            interaction.guild.roles,
-            id=self.config["ctf_creators"]) in interaction.user.roles:
-      modal = SetChallengeModal(self.bot, self.config)
-      await interaction.response.send_modal(modal)
-    else:
+    try:
+        # Reload the configuration before performing any operation
+        self.config = load_config()
+
+        if discord.utils.get(interaction.guild.roles, id=self.config["ctf_creators"]) in interaction.user.roles:
+            modal = SetChallengeModal(self.bot, self.config)
+            await interaction.response.send_modal(modal)
+        else:
+            await interaction.response.send_message("You don't have permission to set a challenge!", ephemeral=True)
+    except Exception as e:
+        logging.error(f"Error in setchallenge: {e}")
+        await interaction.response.send_message("Failed to set challenge. Please check logs.", ephemeral=True)
+    except Exception as e:
+      logging.error(f"Error in setchallenge: {e}")
       await interaction.response.send_message(
-          "You don't have permission to set a challenge!", ephemeral=True)
+          "Failed to set challenge. Please check logs.", ephemeral=True)
 
   @discord.app_commands.command(name="shutdown",
                                 description="Shutdowns active challenge")
   async def shutdown(self, interaction: discord.Interaction) -> None:
     try:
+      cog_reload()
       if discord.utils.get(
               interaction.guild.roles,
               id=int(self.config["ctf_creators"])) not in interaction.user.roles:
@@ -173,6 +178,7 @@ class AdminCommands(commands.Cog):
       await interaction.response.send_message(
           "Failed to shutdown challenge. Please check logs.", ephemeral=True)
 
+  
 
 async def setup(bot) -> None:
   await bot.add_cog(AdminCommands(bot))

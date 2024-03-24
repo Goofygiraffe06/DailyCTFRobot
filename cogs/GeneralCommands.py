@@ -93,6 +93,7 @@ class GeneralCommands(commands.Cog):
   @discord.app_commands.command(name="submit",
                                 description="Used to Submit flag.")
   async def submit(self, interaction: discord.Interaction, flag: str) -> None:
+    self.config = load_config()
     challenge_data = load_challenge_data()
 
     if not challenge_data:
@@ -163,6 +164,7 @@ class GeneralCommands(commands.Cog):
       name="timeleft",
       description="Tells the time left for the hint and the challenge end.")
   async def timeleft(self, interaction: discord.Interaction) -> None:
+    self.config = load_config()
     challenge_data = load_challenge_data()
 
     if not challenge_data:
@@ -205,6 +207,7 @@ class GeneralCommands(commands.Cog):
   @discord.app_commands.command(
       name="feedback", description="Submit feedback, bugs, or suggestions.")
   async def _feedback(self, interaction: discord.Interaction) -> None:
+    self.config = load_config()
     logging.info(
         f"Feedback command invoked by {interaction.user.name} (ID: {interaction.user.id})"
     )

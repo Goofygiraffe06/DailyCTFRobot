@@ -114,16 +114,16 @@ class AdminCommands(commands.Cog):
   async def setchallenge(self, interaction: discord.Interaction) -> None:
     try:
         # Reload the configuration before performing any operation
-        self.config = load_config()
+      self.config = load_config()
 
-        if discord.utils.get(interaction.guild.roles, id=self.config["ctf_creators"]) in interaction.user.roles:
-            modal = SetChallengeModal(self.bot, self.config)
-            await interaction.response.send_modal(modal)
-        else:
-            await interaction.response.send_message("You don't have permission to set a challenge!", ephemeral=True)
+      if discord.utils.get(interaction.guild.roles, id=self.config["ctf_creators"]) in interaction.user.roles:
+        modal = SetChallengeModal(self.bot, self.config)
+        await interaction.response.send_modal(modal)
+      else:
+        await interaction.response.send_message("You don't have permission to set a challenge!", ephemeral=True)
     except Exception as e:
-        logging.error(f"Error in setchallenge: {e}")
-        await interaction.response.send_message("Failed to set challenge. Please check logs.", ephemeral=True)
+      logging.error(f"Error in setchallenge: {e}")
+      await interaction.response.send_message("Failed to set challenge. Please check logs.", ephemeral=True)
     except Exception as e:
       logging.error(f"Error in setchallenge: {e}")
       await interaction.response.send_message(
@@ -133,7 +133,7 @@ class AdminCommands(commands.Cog):
                                 description="Shutdowns active challenge")
   async def shutdown(self, interaction: discord.Interaction) -> None:
     try:
-      cog_reload()
+      self.config = load_config()
       if discord.utils.get(
               interaction.guild.roles,
               id=int(self.config["ctf_creators"])) not in interaction.user.roles:
@@ -178,7 +178,6 @@ class AdminCommands(commands.Cog):
       await interaction.response.send_message(
           "Failed to shutdown challenge. Please check logs.", ephemeral=True)
 
-  
 
 async def setup(bot) -> None:
   await bot.add_cog(AdminCommands(bot))

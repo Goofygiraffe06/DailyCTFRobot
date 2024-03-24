@@ -1,9 +1,9 @@
 <br/>
 <p align="center">
   <a href="https://github.com/Goofygiraffe06/DailyCTFRobot">
-    ![banner](./assets/banner.gif)
+    <img src="https://i.imgur.com/caMRRlx.gif" alt="Logo">
   </a>
-
+  
   <h3 align="center">DailyCTF Robot</h3>
 
   <p align="center">

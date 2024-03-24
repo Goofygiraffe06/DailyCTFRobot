@@ -15,6 +15,8 @@ logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logging.getLogger("flask.app").setLevel(logging.ERROR)
 
 # Class responsible for creating a form (a.k.a. modal) for setchallenge command
+
+
 class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
 
   def __init__(self, bot, config):
@@ -58,7 +60,7 @@ class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
       max_length=1000,
       placeholder="Optional: Describe how to solve the challenge",
   )
-  
+
   async def on_submit(self, interaction: discord.Interaction):
     try:
       day = self.day_input.value
@@ -115,8 +117,8 @@ class AdminCommands(commands.Cog):
                                 description="Create a new challenge")
   async def setchallenge(self, interaction: discord.Interaction) -> None:
     if discord.utils.get(
-        interaction.guild.roles,
-        id=self.config["ctf_creators"]) in interaction.user.roles:
+            interaction.guild.roles,
+            id=self.config["ctf_creators"]) in interaction.user.roles:
       modal = SetChallengeModal(self.bot, self.config)
       await interaction.response.send_modal(modal)
     else:
@@ -128,8 +130,8 @@ class AdminCommands(commands.Cog):
   async def shutdown(self, interaction: discord.Interaction) -> None:
     try:
       if discord.utils.get(
-          interaction.guild.roles,
-          id=int(self.config["ctf_creators"])) not in interaction.user.roles:
+              interaction.guild.roles,
+              id=int(self.config["ctf_creators"])) not in interaction.user.roles:
         await interaction.response.send_message(
             "You don't have permission to shutdown the challenge!",
             ephemeral=True)
@@ -143,7 +145,7 @@ class AdminCommands(commands.Cog):
 
       challenge_channel = self.bot.get_channel(
           int(self.config["leaderboard_channel_id"])
-      )  
+      )
       if challenge_data["leaderboard"]:
         await display_leaderboard(self.bot)
       else:
@@ -156,13 +158,13 @@ class AdminCommands(commands.Cog):
             f"Official Writeup: {challenge_data['writeup']}")
       else:
         await challenge_channel.send(
-          f"No official writeup for Day-{challenge_data['day']}")
+            f"No official writeup for Day-{challenge_data['day']}")
       avg = calculate_average_rating()
       if avg is not None:
-          await challenge_channel.send(
+        await challenge_channel.send(
             f"The average rating for the challenge is: {avg:.2f}")
       else:
-          await challenge_channel.send("No ratings received for the challenge.")
+        await challenge_channel.send("No ratings received for the challenge.")
       save_challenge_data({})
       await interaction.response.send_message(
           "Challenge has been shut down and leaderboard has been printed.", ephemeral=True)

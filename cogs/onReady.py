@@ -1,10 +1,11 @@
 # cogs/onReady.py - Manages activity status, On join messages and also unexpected bot restarts.
 
-import logging 
+import logging
 from discord.ext import commands, tasks
 import random
 from .utils import release_hints, end_challenge
-import discord 
+import discord
+
 
 class onReady(commands.Cog):
   def __init__(self, bot):
@@ -80,9 +81,9 @@ class onReady(commands.Cog):
   async def on_guild_join(self, guild):
     channel = guild.system_channel or next(
         (
-          channel
-          for channel in guild.channels
-          if isinstance(channel, discord.TextChannel)
+            channel
+            for channel in guild.channels
+            if isinstance(channel, discord.TextChannel)
         ),
         None,
     )
@@ -92,7 +93,7 @@ class onReady(commands.Cog):
           "DailyCTF Robot is a bot designed to automate and enhance the experience of hosting Capture The Flag challenges, making it seamless for both organizers and participants."
       )
       await channel.send(
-           "To get started, please use the `/setup` command to configure me for your server."
+          "To get started, please use the `/setup` command to configure me for your server."
       )
       cheatsheet = """
       **Basic Commands Cheatsheet:**
@@ -104,6 +105,7 @@ class onReady(commands.Cog):
       `/feedback` - Allows to submit feedback to bot creator.
       """
       await channel.send(cheatsheet)
+
 
 async def setup(bot) -> None:
   await bot.add_cog(onReady(bot))

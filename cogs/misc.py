@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 import time
 
+
 class misc(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
@@ -11,14 +12,14 @@ class misc(commands.Cog):
   @commands.command(name="ding")
   async def _ping(self, ctx):
     """ Pong with latency! """
-    before = time.monotonic()  
+    before = time.monotonic()
     message = await ctx.send("Dong!")
     ping = (time.monotonic() - before) * 1000
     await message.edit(content=f"Dong!  `{int(ping)}ms`")
     print(f"Dong {int(ping)}ms")
 
   @discord.app_commands.command(name="ping",
-                    description="Check if the bot is alive or not.")
+                                description="Check if the bot is alive or not.")
   async def ping(self, interaction: discord.Interaction) -> None:
     await interaction.response.send_message("Pong!")
 
@@ -29,8 +30,7 @@ class misc(commands.Cog):
   async def help_command(self, interaction: discord.Interaction) -> None:
     embed = discord.Embed(
         title="DailyCTF Robot Help",
-        description=
-        "List of available commands. DailyCTF Robot is a bot to automate ...",
+        description="List of available commands. DailyCTF Robot is a bot to automate ...",
         color=0x55A7F7)
 
     # General Commands
@@ -56,6 +56,7 @@ class misc(commands.Cog):
                     inline=False)
 
     await interaction.response.send_message(embed=embed)
+
 
 async def setup(bot) -> None:
   await bot.add_cog(misc(bot))

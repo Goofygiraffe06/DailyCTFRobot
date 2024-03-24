@@ -6,7 +6,7 @@ from discord.ext import commands
 import os
 from keep_alive import keep_alive
 import asyncio
-import pyfiglet 
+import pyfiglet
 
 # Initialize logging
 logging.basicConfig(
@@ -22,11 +22,13 @@ bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 os.system("clear")
 print(pyfiglet.figlet_format("DailyCTF Robot"))
 
+
 async def main():
     async with bot:
         # Load cogs
         for filename in os.listdir('./cogs'):
-            if filename.endswith('.py') and filename != '__init__.py' and filename != 'utils.py': # utils.py is a non cog file and used to import neccesary functions
+            # utils.py is a non cog file and used to import neccesary functions
+            if filename.endswith('.py') and filename != '__init__.py' and filename != 'utils.py':
                 try:
                     await bot.load_extension(f'cogs.{filename[:-3]}')
                     logging.info(f"Loaded {filename} cog successfully.")
@@ -41,4 +43,4 @@ try:
 except (discord.errors.HTTPException, discord.app_commands.errors.CommandInvokeError):
     logging.error("Being Rate Limited!")
     os.system("kill 1")  # Kill the current running process
-    os.system("python restart.py")  
+    os.system("python restart.py")

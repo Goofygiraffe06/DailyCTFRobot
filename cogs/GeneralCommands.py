@@ -16,6 +16,8 @@ logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logging.getLogger("flask.app").setLevel(logging.ERROR)
 
 # Class to handle the feedback forms
+
+
 class FeedbackModal(discord.ui.Modal, title="Send us your feedback"):
   fb_title = discord.ui.TextInput(
       style=discord.TextStyle.short,
@@ -58,6 +60,8 @@ class FeedbackModal(discord.ui.Modal, title="Send us your feedback"):
     )
 
 # Class that handles the behaviour of rate button
+
+
 class RateButton(discord.ui.Button):
 
   def __init__(self, rating: int):
@@ -77,14 +81,15 @@ class RateButton(discord.ui.Button):
     await interaction.response.send_message(
         f'You rated the challenge {self.rating} stars!', ephemeral=True)
 
+
 class GeneralCommands(commands.Cog):
 
   def __init__(self, bot):
     self.bot = bot
     # Overriding default discord help message for our very own embeded one.
     self.bot.remove_command("help")
-    self.config = load_config()    
-  
+    self.config = load_config()
+
   @discord.app_commands.command(name="submit",
                                 description="Used to Submit flag.")
   async def submit(self, interaction: discord.Interaction, flag: str) -> None:
@@ -96,7 +101,7 @@ class GeneralCommands(commands.Cog):
       return
 
     if "answer" in challenge_data and str(
-        interaction.user.id) in challenge_data["leaderboard"]:
+            interaction.user.id) in challenge_data["leaderboard"]:
       await interaction.response.send_message(
           "You've already submitted the correct answer!", ephemeral=True)
       return
@@ -165,7 +170,8 @@ class GeneralCommands(commands.Cog):
                                               ephemeral=True)
       return
 
-    start_time = datetime.datetime.fromtimestamp(challenge_data["start_time"]) # The start time is stores as an unix timestamp allowing us easily perform arithemetic operations on it.
+    # The start time is stores as an unix timestamp allowing us easily perform arithemetic operations on it.
+    start_time = datetime.datetime.fromtimestamp(challenge_data["start_time"])
     current_time = datetime.datetime.utcnow()
 
     hint_time = start_time + datetime.timedelta(hours=6)
@@ -180,7 +186,7 @@ class GeneralCommands(commands.Cog):
       return
 
     if challenge_data.get(
-        "leaderboard", {}) and not challenge_data.get("hints_revealed", False):
+            "leaderboard", {}) and not challenge_data.get("hints_revealed", False):
       hint_msg = "Hint will no longer be printed since someone has already solved the challenge."
     elif current_time < hint_time:
       hours_hint, remainder_hint = divmod(time_to_hint.total_seconds(), 3600)
@@ -216,15 +222,16 @@ class GeneralCommands(commands.Cog):
     # Check if user has already rated
     for rate in challenge_data.get('ratings', []):
       if rate.get('user') == str(interaction.user.id):
-          await interaction.response.send_message(
-              'You have already rated this challenge!', ephemeral=True)
-          return
+        await interaction.response.send_message(
+            'You have already rated this challenge!', ephemeral=True)
+        return
 
     view = RateView()
 
     await interaction.response.send_message("Rate today's challenge:",
                                             view=view,
                                             ephemeral=True)
+
 
 async def setup(bot) -> None:
   await bot.add_cog(GeneralCommands(bot))

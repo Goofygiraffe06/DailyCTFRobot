@@ -59,7 +59,8 @@ async def end_challenge(bot):
     challenge_data = load_challenge_data()
 
     if "start_time" in challenge_data:
-        start_time = datetime.datetime.fromtimestamp(challenge_data["start_time"])
+        start_time = datetime.datetime.fromtimestamp(
+            challenge_data["start_time"])
         elapsed_time = datetime.datetime.utcnow() - start_time
         remaining_time = 86400 - elapsed_time.total_seconds()
 
@@ -176,7 +177,8 @@ async def release_hints(bot):
         return
 
     if "start_time" in challenge_data:
-        start_time = datetime.datetime.fromtimestamp(challenge_data["start_time"])
+        start_time = datetime.datetime.fromtimestamp(
+            challenge_data["start_time"])
         elapsed_time = datetime.datetime.utcnow() - start_time
         remaining_time = 21600 - elapsed_time.total_seconds()
 
@@ -212,7 +214,8 @@ async def release_hints(bot):
 
 async def check_rating(interaction):
     challenge_data = load_challenge_data()
-    user_ratings = [rating['user'] for rating in challenge_data.get('ratings', [])]
+    user_ratings = [rating['user']
+                    for rating in challenge_data.get('ratings', [])]
     if str(interaction.user.id) not in user_ratings:
         view = RateView()
         await interaction.followup.send("Rate today's challenge:", view=view, ephemeral=True)

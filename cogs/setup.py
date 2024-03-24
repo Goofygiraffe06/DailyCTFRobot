@@ -1,4 +1,4 @@
-# cogs/setup.py - Handles server specific configuration for the bot including role selection and channel selection. 
+# cogs/setup.py - Handles server specific configuration for the bot including role selection and channel selection.
 
 import discord
 from .utils import load_config, save_config
@@ -17,18 +17,20 @@ logging.getLogger("flask.app").setLevel(logging.ERROR)
 # Shared Configuration Object to hold our configuration
 class Config:
   def __init__(self):
-      self.data = load_config()
+    self.data = load_config()
 
   def get(self, key, default=None):
-      return self.data.get(key, default)
+    return self.data.get(key, default)
 
   def set(self, key, value):
-      self.data[key] = value
+    self.data[key] = value
 
   def save(self):
-      save_config(self.data)
+    save_config(self.data)
 
 # Create a select menu for roles
+
+
 class RoleSelect(discord.ui.Select):
   def __init__(self, roles, config):
     options = [
@@ -50,8 +52,8 @@ class RoleSelect(discord.ui.Select):
 class ChannelSelect(discord.ui.Select):
   def __init__(self, channels, config):
     options = [
-      discord.SelectOption(label=channel.name, value=str(channel.id))
-      for channel in channels if isinstance(channel, discord.TextChannel)
+        discord.SelectOption(label=channel.name, value=str(channel.id))
+        for channel in channels if isinstance(channel, discord.TextChannel)
     ]
     super().__init__(placeholder="Select the announcement channel...",
                      options=options, row=1)
@@ -83,6 +85,8 @@ class LeaderboardChannelSelect(discord.ui.Select):
     )
 
 # Add individual drop-down menu into a single modal
+
+
 class SetupView(discord.ui.View):
   def __init__(self, roles, channels, config):
     super().__init__(timeout=60)
@@ -103,13 +107,14 @@ class Setup(commands.Cog):
   @discord.app_commands.command(name="setup", description="Setup bot settings for the server.")
   @has_permissions(administrator=True)
   async def setup(self, interaction: discord.Interaction) -> None:
-    logging.info(f"Setup command invoked by {interaction.user.name} (ID: {interaction.user.id}) in server: {interaction.guild.name} (ID: {interaction.guild.id})")
+    logging.info(
+        f"Setup command invoked by {interaction.user.name} (ID: {interaction.user.id}) in server: {interaction.guild.name} (ID: {interaction.guild.id})")
     roles = interaction.guild.roles
     channels = interaction.guild.channels
     view = SetupView(roles, channels, self.config)
     await interaction.response.send_message(
-      "Please select the appropriate role and channel:",
-      view=view, ephemeral=True
+        "Please select the appropriate role and channel:",
+        view=view, ephemeral=True
     )
 
   @setup.error
@@ -120,6 +125,7 @@ class Setup(commands.Cog):
           f"Unauthorized setup attempt by {interaction.user.name} (ID: {interaction.user.id}) in server: {interaction.guild.name} (ID: {interaction.guild.id})"
       )
       return
+
 
 async def setup(bot) -> None:
   await bot.add_cog(Setup(bot))

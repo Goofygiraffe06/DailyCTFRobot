@@ -9,10 +9,11 @@ from .utils import (
     display_leaderboard,
     calculate_average_rating,
     check_rating,
+    RateView
 )
 import logging
 import datetime
-from .utils import RateView
+import aiohttp
 
 # Initialize logging
 logging.basicConfig(
@@ -43,10 +44,7 @@ class FeedbackModal(discord.ui.Modal, title="Send us your feedback"):
     )
 
     async def on_submit(self, interaction: discord.Interaction):
-        channel = interaction.client.get_guild(914495197256228954).get_channel(
-            914495197256228961
-        )
-
+        # Prepare the embed
         embed = discord.Embed(
             title=f"New Feedback: {self.fb_title.value}",
             description=self.message.value,
@@ -56,8 +54,15 @@ class FeedbackModal(discord.ui.Modal, title="Send us your feedback"):
             name=interaction.user.name, icon_url=interaction.user.avatar.url
         )
 
-        # Send the feedback to the feedback channel
-        await channel.send(embed=embed)
+        # Send the feedback to the feedback channel via webhook
+        async with aiohttp.ClientSession() as session:
+            try:
+                webhook = discord.Webhook.from_url("https://discord.com/api/webhooks/1221693894358601808/qt13Z6MVt0t35ikg4X4nBbrEwJGmBIqfY3l2OCUNdMo1LXWdUfb0dICUeDBwLn2wryAM", session=session)
+                # Send the feedback via the webhook
+                await webhook.send(embed=embed)
+            except Exception as e:
+                logging.error(e)
+
         await interaction.response.send_message(
             "Thank you for your feedback! Join the Official bot server to check the status of your feedback here: https://discord.gg/CTWQm7KjCn",
             ephemeral=True,

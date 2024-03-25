@@ -5,8 +5,9 @@ import json
 import discord
 from discord.ext import commands
 
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s | %(levelname)s | %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s"
+)
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logging.getLogger("flask.app").setLevel(logging.ERROR)
 
@@ -59,8 +60,7 @@ async def end_challenge(bot):
     challenge_data = load_challenge_data()
 
     if "start_time" in challenge_data:
-        start_time = datetime.datetime.fromtimestamp(
-            challenge_data["start_time"])
+        start_time = datetime.datetime.fromtimestamp(challenge_data["start_time"])
         elapsed_time = datetime.datetime.utcnow() - start_time
         remaining_time = 86400 - elapsed_time.total_seconds()
 
@@ -108,9 +108,7 @@ async def display_leaderboard(bot):
         challenge_data.get("leaderboard", {}).items(), key=lambda x: x[1]
     )
 
-    leaderboard_msg = (
-        f"🏆 **The winners of today's CTF (Day-{challenge_data.get('day', 'N/A')}) are:** 🏆\n"
-    )
+    leaderboard_msg = f"🏆 **The winners of today's CTF (Day-{challenge_data.get('day', 'N/A')}) are:** 🏆\n"
     position_emojis = ["🥇", "🥈", "🥉"]
     for i, (user_id, _) in enumerate(sorted_leaderboard[:3]):
         user = bot.get_user(int(user_id))
@@ -157,10 +155,9 @@ class RateButton(discord.ui.Button):
         user_id = str(interaction.user.id)
         challenge_data = load_challenge_data()
 
-        challenge_data.setdefault('ratings', []).append({
-            'user': user_id,
-            'rating': self.rating
-        })
+        challenge_data.setdefault('ratings', []).append(
+            {'user': user_id, 'rating': self.rating}
+        )
         save_challenge_data(challenge_data)
 
         await interaction.response.send_message(
@@ -177,8 +174,7 @@ async def release_hints(bot):
         return
 
     if "start_time" in challenge_data:
-        start_time = datetime.datetime.fromtimestamp(
-            challenge_data["start_time"])
+        start_time = datetime.datetime.fromtimestamp(challenge_data["start_time"])
         elapsed_time = datetime.datetime.utcnow() - start_time
         remaining_time = 21600 - elapsed_time.total_seconds()
 
@@ -191,18 +187,15 @@ async def release_hints(bot):
 
     config = load_config()
 
-    if (
-        not challenge_data.get("hints_revealed", False)
-        and not challenge_data.get("leaderboard", {})
+    if not challenge_data.get("hints_revealed", False) and not challenge_data.get(
+        "leaderboard", {}
     ):
         challenge_channel = bot.get_channel(int(config.get("channel_id", 0)))
         if challenge_channel:
             await challenge_channel.send(
                 f"Hint for Day-{challenge_data.get('day', 'N/A')}: `{challenge_data.get('hints', 'No hints available')}`"
             )
-            logging.info(
-                f"Hint for Day-{challenge_data.get('day', 'N/A')} released."
-            )
+            logging.info(f"Hint for Day-{challenge_data.get('day', 'N/A')} released.")
 
         challenge_data["hints_revealed"] = True
         save_challenge_data(challenge_data)
@@ -214,10 +207,11 @@ async def release_hints(bot):
 
 async def check_rating(interaction):
     challenge_data = load_challenge_data()
-    user_ratings = [rating['user']
-                    for rating in challenge_data.get('ratings', [])]
+    user_ratings = [rating['user'] for rating in challenge_data.get('ratings', [])]
     if str(interaction.user.id) not in user_ratings:
         view = RateView()
-        await interaction.followup.send("Rate today's challenge:", view=view, ephemeral=True)
+        await interaction.followup.send(
+            "Rate today's challenge:", view=view, ephemeral=True
+        )
     else:
         await interaction.followup.send("You've already submitted!", ephemeral=True)

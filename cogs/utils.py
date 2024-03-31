@@ -72,6 +72,7 @@ async def end_challenge(bot):
     challenge_channel = bot.get_channel(int(config.get("channel_id", 0)))
 
     if challenge_channel:
+        await display_leaderboard(bot)
         await challenge_channel.send(
             f"Day-{challenge_data.get('day', 'N/A')} Challenge has finished!"
         )

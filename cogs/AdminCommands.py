@@ -64,7 +64,7 @@ class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
         style=discord.TextStyle.long,
         label="Write-up",
         required=False,  # Since it's optional
-        max_length=1000,
+        max_length=2000,
         placeholder="Optional: Describe how to solve the challenge",
     )
 
@@ -94,12 +94,15 @@ class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
             }
             save_challenge_data(challenge_data)
 
-            formatted_message = (
-                f"@everyone\n**Day-{challenge_data['day']} Challenge by {interaction.user.name}:**\n"
-                f"`{challenge_data['desc']}`"
-            )
+            challenge_ping = "@everyone"  # Maybe in the future I will change this to a specific role during setup process
+            
+            embed = discord.Embed(title=f"Day: {challenge_data['day']} Challenge")
+            embed.add_field(name="Description:",
+                            value=f"```{challenge_data['desc']}```")
+            embed.set_footer(text=f"Challenge submitted by {interaction.user.name}")
             challenge_channel = self.bot.get_channel(int(self.config["channel_id"]))
-            await challenge_channel.send(formatted_message)
+            await challenge_channel.send(challenge_ping)
+            await challenge_channel.send(embed=embed)
             await interaction.response.send_message(
                 f"Challenge set successfully for Day {day}!", ephemeral=True
             )
@@ -197,7 +200,7 @@ class AdminCommands(commands.Cog):
                 )
             else:
                 await challenge_channel.send(
-                    f"No official writeup for Day-{challenge_data['day']}"
+                    f"No official writeup for Day-{challenge_data['da,y']}"
                 )
             avg = calculate_average_rating()
             if avg is not None:

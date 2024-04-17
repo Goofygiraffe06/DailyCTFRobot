@@ -1,1 +1,10 @@
-{}
+{
+    "master_id": 749572519106838560,
+    "day": "1",
+    "desc": "test",
+    "answer": "test",
+    "hints": "test",
+    "writeup": "test",
+    "leaderboard": {},
+    "start_time": 1713330380
+}

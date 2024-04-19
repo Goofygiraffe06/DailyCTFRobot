@@ -4,7 +4,7 @@ import datetime
 import json
 import discord
 from discord.ext import commands
-from .db_utils import db_init, fetch_config, update_config
+from .db_utils import db_init, fetch_config, update_confi, fetch_challenge_data, remove_challenge_data
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s"
@@ -54,11 +54,13 @@ def save_config(config_data):
         logging.error(f"Failed to save config data. Error: {e}")
         return {}
 
-async def end_challenge(bot):
-    config = fetch_config(db_init())
-    challenge_data = load_challenge_data()
+con = db_init()
 
-    if "start_time" in challenge_data:
+async def end_challenge(bot):
+    config = fetch_config(con)
+    challenge_data = fetch_challenge_data(con)
+
+    if "start_time" != "":
         start_time = datetime.datetime.fromtimestamp(challenge_data["start_time"])
         elapsed_time = datetime.datetime.utcnow() - start_time
         remaining_time = 86400 - elapsed_time.total_seconds()
@@ -68,24 +70,24 @@ async def end_challenge(bot):
     else:
         await asyncio.sleep(86400)
 
-    challenge_channel = bot.get_channel(int(config.get("channel_id", 0)))
+    challenge_channel = bot.get_channel(config["challenge_channel"])
 
     if challenge_channel:
         await display_leaderboard(bot)
         await challenge_channel.send(
-            f"Day-{challenge_data.get('day', 'N/A')} Challenge has finished!"
+            f"Day-{challenge_data["day"]} Challenge has finished!"
         )
         logging.info(
-            f"Day-{challenge_data.get('day', 'N/A')} challenge has been finished..."
+            f"Day-{challenge_data["day"]} challenge has been finished..."
         )
 
-        if 'writeup' in challenge_data and challenge_data['writeup']:
+        if 'writeup' in challenge_data and challenge_data["writeup"]:
             await challenge_channel.send(
-                f"Writeup for Day-{challenge_data.get('day', 'N/A')}: {challenge_data['writeup']}"
+                f"Writeup for Day-{challenge_data["day"]}: {challenge_data["writeup"]}"
             )
         else:
             await challenge_channel.send(
-                f"No writeup provided for Day-{challenge_data.get('day', 'N/A')}."
+                f"No writeup provided for Day-{challenge_data["day"]}."
             )
 
         avg = calculate_average_rating()
@@ -95,7 +97,7 @@ async def end_challenge(bot):
             )
         else:
             await challenge_channel.send("No ratings received for the challenge.")
-        save_challenge_data({})
+        remove_challenge_data(con)
 
 
 async def display_leaderboard(bot):

@@ -32,6 +32,7 @@ async def main():
                 filename.endswith('.py')
                 and filename != '__init__.py'
                 and filename != 'utils.py'
+                and filename != 'db_utils.py'
             ):
                 try:
                     await bot.load_extension(f'cogs.{filename[:-3]}')

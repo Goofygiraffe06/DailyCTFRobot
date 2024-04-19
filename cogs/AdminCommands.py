@@ -23,7 +23,6 @@ logging.basicConfig(
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logging.getLogger("flask.app").setLevel(logging.ERROR)
 
-
 # Modal Class to handle the setchallenge
 class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
     def __init__(self, bot, config):
@@ -44,7 +43,7 @@ class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
         required=True,
         max_length=2000,
         placeholder="Description of the challenge",
-    )
+    ) 
 
     answer_input = discord.ui.TextInput(
         style=discord.TextStyle.short,

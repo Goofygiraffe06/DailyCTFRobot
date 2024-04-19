@@ -11,7 +11,6 @@ logging.basicConfig(
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logging.getLogger("flask.app").setLevel(logging.ERROR)
 
-
 def load_challenge_data():
     try:
         with open("challenge_data.txt", "r") as file:
@@ -53,7 +52,6 @@ def save_config(config_data):
     except Exception as e:
         logging.error(f"Failed to save config data. Error: {e}")
         return {}
-
 
 async def end_challenge(bot):
     config = load_config()

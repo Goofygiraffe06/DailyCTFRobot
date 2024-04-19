@@ -40,7 +40,7 @@ def create_tables(con):
                 answer TEXT,
                 hints TEXT,
                 writeup TEXT,
-                start_time INTEGER
+                start_time TIMESTAMP
             )
         """)
 
@@ -80,28 +80,21 @@ def update_config(con, key: str, value: int):
         logging.error(f"Error updating table config: {e}")
         return False
 
-def insert_challenge(con, master_id: int, description: str, answer: str, hints: str, writeup: str):
+def insert_challenge(con, values):
     try:
         cur = con.cursor()
+        cur.execute("""
+            DELETE FROM challenge_data
+        """)
 
-        cur.execute("DELETE FROM challenge_data")
-
-        cur.execute("""INSERT INTO challenge_data (master_id, description, answer, hints, writeup, start_time) 
-                        VALUES (?, ?, ?, ?, ?, ?)""",
-                    master_id,
-                    description,
-                    answer,
-                    hints,
-                    writeup,
-                    start_time)
+        cur.execute("""INSERT INTO challenge_data (master_id, description, answer, hints, writeup)
+                        VALUES (?, ?, ?, ?, ?)""", values)
         con.commit()
         logging.info("Inserted into table challenge_data successfully.")
         return True
-
     except sqlite3.Error as e:
         logging.error(f"Error inserting table challenge_data: {e}")
         return False
-
 
 def insert_leaderboard(con, user_id: int, submission: int):
     try:
@@ -124,6 +117,33 @@ def fetch_config(con):
 
         cur.execute("SELECT * FROM config")
         row = cur.fetchone()
-        return row
+        if row:
+            return {
+                "channel_id": row[1],
+                "ctf_creators": row[2],
+                "leaderboard_channel_id": row[3]
+            }
     except sqlite3.Error as e:
         logging.error(f"Error fetching table config: {e}")
+        return None
+
+def fetch_challenge_data(con):
+    try:
+        cur = con.cursor()
+        cur.execute("SELECT * FROM challenge_data")
+        row = cur.fetchone()
+        if row:
+            return {
+                "day": row[0],
+                "master_id": row[1],
+                "description": row[2],
+                "answer": row[3],
+                "hints": row[4],
+                "writeup": row[5],
+                "start_time": row[6]
+            }
+        else:
+            return None
+    except sqlite3.Error as e:
+        logging.error(f"Error fetching challenge data: {e}")
+

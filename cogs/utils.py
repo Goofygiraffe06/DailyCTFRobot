@@ -4,6 +4,7 @@ import datetime
 import json
 import discord
 from discord.ext import commands
+from .db_utils import db_init, fetch_config, update_config
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s"
@@ -54,7 +55,7 @@ def save_config(config_data):
         return {}
 
 async def end_challenge(bot):
-    config = load_config()
+    config = fetch_config(db_init())
     challenge_data = load_challenge_data()
 
     if "start_time" in challenge_data:

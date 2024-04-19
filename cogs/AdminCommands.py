@@ -11,6 +11,7 @@ from .utils import (
     end_challenge,
     calculate_average_rating,
 )
+from .db_utils import db_init, fetch_config, insert_challenge, fetch_challenge_data
 import logging
 import datetime
 from discord.ui import Modal, TextInput
@@ -22,6 +23,9 @@ logging.basicConfig(
 )
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logging.getLogger("flask.app").setLevel(logging.ERROR)
+
+# Initialize connection to database
+con = db_init()
 
 # Modal Class to handle the setchallenge
 class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
@@ -69,6 +73,7 @@ class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
 
     async def on_submit(self, interaction: discord.Interaction):
         try:
+
             day = self.day_input.value
             description = self.description_input.value
             answer = self.answer_input.value
@@ -81,23 +86,15 @@ class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
                 )
                 return
 
-            challenge_data = {
-                "master_id": interaction.user.id,
-                "day": day,
-                "desc": description,
-                "answer": answer,
-                "hints": hints,
-                "writeup": writeup,
-                "leaderboard": {},
-                "start_time": int(datetime.datetime.utcnow().timestamp()),
-            }
-            save_challenge_data(challenge_data)
+            insert_challenge(con, (interaction.user.id, description, answer, hints, writeup))
+ 
+            challenge_data = fetch_challenge_data(con)
 
             challenge_ping = "@everyone"  # Maybe in the future I will change this to a specific role during setup process
             
             embed = discord.Embed(title=f"Day: {challenge_data['day']} Challenge")
             embed.add_field(name="Description:",
-                            value=f"```{challenge_data['desc']}```")
+                            value=f"```{challenge_data['description']}```")
             embed.set_footer(text=f"Challenge submitted by {interaction.user.name}")
             challenge_channel = self.bot.get_channel(int(self.config["channel_id"]))
             await challenge_channel.send(challenge_ping)
@@ -122,7 +119,7 @@ class AdminCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         try:
-            self.config = load_config()
+            self.config = fetch_config(con)
         except Exception as e:
             logging.error(f"Error loading config: {e}")
 
@@ -132,7 +129,7 @@ class AdminCommands(commands.Cog):
     async def setchallenge(self, interaction: discord.Interaction) -> None:
         try:
             # Reload the configuration before performing any operation
-            self.config = load_config()
+            self.config = fetch_config(con)
 
             if (
                 discord.utils.get(
@@ -162,7 +159,7 @@ class AdminCommands(commands.Cog):
     )
     async def shutdown(self, interaction: discord.Interaction) -> None:
         try:
-            self.config = load_config()
+            self.config = fetch_config()
             if (
                 discord.utils.get(
                     interaction.guild.roles, id=int(self.config["ctf_creators"])
@@ -175,7 +172,7 @@ class AdminCommands(commands.Cog):
                 )
                 return
 
-            challenge_data = load_challenge_data()
+            challenge_data = fetch_challenge_data(con)
             if not challenge_data:
                 await interaction.response.send_message(
                     "No active challenge to shut down.", ephemeral=True

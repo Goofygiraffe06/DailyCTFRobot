@@ -38,16 +38,17 @@ def create_tables(con):
                 master_id INTEGER,
                 description TEXT,
                 answer TEXT,
+                attachment TEXT,
                 hints TEXT,
                 writeup TEXT,
-                start_time TIMESTAMP
+                start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
 
         cur.execute("""
             CREATE TABLE IF NOT EXISTS leaderboard (
                 user_id INTEGER PRIMARY KEY,
-                submission TIMESTAMP
+                submission TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
 
@@ -87,8 +88,8 @@ def insert_challenge(con, values):
             DELETE FROM challenge_data
         """)
 
-        cur.execute("""INSERT INTO challenge_data (master_id, description, answer, hints, writeup)
-                        VALUES (?, ?, ?, ?, ?)""", values)
+        cur.execute("""INSERT INTO challenge_data (master_id, description, answer, attachment, hints, writeup)
+                        VALUES (?, ?, ?, ?, ?, ?)""", values)
         con.commit()
         logging.info("Inserted into table challenge_data successfully.")
         return True
@@ -138,12 +139,22 @@ def fetch_challenge_data(con):
                 "master_id": row[1],
                 "description": row[2],
                 "answer": row[3],
-                "hints": row[4],
-                "writeup": row[5],
-                "start_time": row[6]
+                "attachment": row[4],
+                "hints": row[5],
+                "writeup": row[6],
+                "start_time": row[7]
             }
         else:
             return None
     except sqlite3.Error as e:
         logging.error(f"Error fetching challenge data: {e}")
 
+def remove_challenge_data(con):
+    try:
+        cur = con.cursor()
+
+        cur.execute("DELETE FROM challenge_data")
+        logging.info("Deleted table challenge_data successfully.")
+
+    except sqlite3.Error as e:
+        logging.error(f"Error deleting table challenge_data: {e}")

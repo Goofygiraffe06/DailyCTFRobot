@@ -26,20 +26,22 @@ logging.getLogger("flask.app").setLevel(logging.ERROR)
 
 # Initialize connection to database
 con = db_init()
+config = fetch_challenge_data(con)
+
+
+class AttachmentsButton(discord.ui.View):
+    def __init__(self, attachment_url):
+        super().__init__()
+        button = discord.ui.Button(label="📎 Attachment", style=discord.ButtonStyle.url, url=attachment_url)
+        self.add_item(button)
 
 # Modal Class to handle the setchallenge
-class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
+title = f"Set a Challenge for Day {config['day']}" if config is not None and 'day' in config else "Set a Challenge"
+class SetChallengeModal(discord.ui.Modal, title = title):
     def __init__(self, bot, config):
         super().__init__()
         self.bot = bot
         self.config = config
-
-    day_input = discord.ui.TextInput(
-        style=discord.TextStyle.short,
-        label="Day",
-        required=True,
-        placeholder="Day number of the challenge",
-    )
 
     description_input = discord.ui.TextInput(
         style=discord.TextStyle.long,
@@ -54,6 +56,13 @@ class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
         label="Answer",
         required=True,
         placeholder="Answer to the challenge",
+    )
+
+    attachment_input = discord.ui.TextInput(
+        style=discord.TextStyle.short,
+        label="Attachment",
+        required=False,
+        placeholder="Attach a single URL for files related to the challenge"
     )
 
     hints_input = discord.ui.TextInput(
@@ -73,21 +82,14 @@ class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
 
     async def on_submit(self, interaction: discord.Interaction):
         try:
-
-            day = self.day_input.value
             description = self.description_input.value
             answer = self.answer_input.value
+            attachment = self.attachment_input.value
             hints = self.hints_input.value
             writeup = self.writeup_input.value
 
-            if not day.isdigit():
-                await interaction.response.send_message(
-                    "Day input should only contain numbers.", ephemeral=True
-                )
-                return
-
-            insert_challenge(con, (interaction.user.id, description, answer, hints, writeup))
- 
+            insert_challenge(con, (interaction.user.id, description, answer, attachment, hints, writeup))
+            
             challenge_data = fetch_challenge_data(con)
 
             challenge_ping = "@everyone"  # Maybe in the future I will change this to a specific role during setup process
@@ -98,10 +100,16 @@ class SetChallengeModal(discord.ui.Modal, title="Set a Challenge"):
             embed.set_footer(text=f"Challenge submitted by {interaction.user.name}")
             challenge_channel = self.bot.get_channel(int(self.config["channel_id"]))
             await challenge_channel.send(challenge_ping)
-            await challenge_channel.send(embed=embed)
+
+            if len(challenge_data['attachment']) == 0:  # idk, for what reason is None reurning false positives ?_?
+                await challenge_channel.send(embed=embed)
+            else:
+                await challenge_channel.send(embed=embed, view=AttachmentsButton(challenge_data["attachment"]))
+
             await interaction.response.send_message(
-                f"Challenge set successfully for Day {day}!", ephemeral=True
+                f"Challenge set successfully for Day {challenge_data['day']}!", ephemeral=True
             )
+
         except Exception as e:
             logging.error(f"Error in on_submit: {e}")
             await interaction.response.send_message(
@@ -128,8 +136,13 @@ class AdminCommands(commands.Cog):
     )
     async def setchallenge(self, interaction: discord.Interaction) -> None:
         try:
-            # Reload the configuration before performing any operation
             self.config = fetch_config(con)
+            
+            if self.config is None:
+                await interaction.response.send_message(
+                "Failed to fetch config, Did you run `/setup`?", ephemeral=True
+            )
+                return
 
             if (
                 discord.utils.get(
@@ -159,7 +172,11 @@ class AdminCommands(commands.Cog):
     )
     async def shutdown(self, interaction: discord.Interaction) -> None:
         try:
-            self.config = fetch_config()
+            self.config = fetch_config(con)
+            if self.config  is None:
+                await interaction.response.send_message("Failed to fetch config, Did you run `/setup`?")
+                return 
+
             if (
                 discord.utils.get(
                     interaction.guild.roles, id=int(self.config["ctf_creators"])

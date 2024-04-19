@@ -41,6 +41,7 @@ def create_tables(con):
                 attachment TEXT,
                 hints TEXT,
                 writeup TEXT,
+                hints_released INTEGER DEFAULT 0,
                 start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -49,6 +50,13 @@ def create_tables(con):
             CREATE TABLE IF NOT EXISTS leaderboard (
                 user_id INTEGER PRIMARY KEY,
                 submission TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS ratings (
+                user_id INTEGER PRIMARY KEY,
+                rating INTEGER
             )
         """)
 
@@ -97,12 +105,18 @@ def insert_challenge(con, values):
         logging.error(f"Error inserting table challenge_data: {e}")
         return False
 
-def insert_leaderboard(con, user_id: int, submission: int):
+def insert_leaderboard(con, user_id: int):
     try:
         cur = con.cursor()
 
-        cur.execute(
-            "INSERT INTO leaderboard (user_id, submission) VALUES (?, ?)", user_id, submission)
+        cur.execute("SELECT * FROM leaderboard WHERE user_id = ?", (user_id,))
+        existing_record = cur.fetchone()
+
+        if existing_record:
+            return False
+        else:
+            cur.execute(
+                "INSERT INTO leaderboard (user_id, submission) VALUES (?, ?)", user_id, submission)
         con.commit()
         logging.info("Inserted into table leaderboard successfully.")
         return True
@@ -111,6 +125,43 @@ def insert_leaderboard(con, user_id: int, submission: int):
         logging.error(f"Error inserting table leaderboard: {e}")
         return False
 
+def len_leaderboard(con):
+    try:
+        cur = con.cursor()
+
+        cur.execute("SELECT COUNT(*) FROM leaderboard")
+        rows = cur.fetchone()
+
+        return rows
+    except sqlite3.Error as e:
+        logging.error(f"Error counting table leaderboard: {e}")
+
+def update_hint(con):
+    try:
+        cur = con.cursor()
+
+        cur.execute("UPDATE leaderboard SET hints_released = 1")
+    except sqlite3.Error as e:
+        logging.error(f"Error updating hints_released table leaderboard: {e}")
+
+
+def insert_rating(con, user_id: int, rating: int):
+    try:    
+        cur = con.cursor()
+
+        # Check if the user ID already exists in the table
+        cur.execute("SELECT * FROM ratings WHERE user_id = ?", (user_id,))
+        existing_rating = cur.fetchone()
+    
+        if existing_rating:
+            # If the user ID exists, return False
+            return False
+        else:
+            # If the user ID doesn't exist, insert a new row
+            cur.execute("INSERT INTO ratings (user_id, rating) VALUES (?, ?)", (user_id, rating))
+            return True
+    except sqlite3.Error as e:
+        logging.error(f"Error inserting table rating: {e}")
 
 def fetch_config(con):
     try:
@@ -142,7 +193,8 @@ def fetch_challenge_data(con):
                 "attachment": row[4],
                 "hints": row[5],
                 "writeup": row[6],
-                "start_time": row[7]
+                "hints_released": row[7],
+                "start_time": row[8]
             }
         else:
             return None
@@ -158,3 +210,26 @@ def remove_challenge_data(con):
 
     except sqlite3.Error as e:
         logging.error(f"Error deleting table challenge_data: {e}")
+
+def fetch_leaderboard(con):
+    try:
+        cur = con.cursor()
+
+        cur.execute("SELECT user_id, submission FROM leaderboard ORDER BY submission ASC")
+        leaderboard_data = cur.fetchall()
+        return leaderboard_data
+
+    except Exception as e:
+        logging.error(f"Error fetching leaderboard data. Error: {e}")
+        return None
+
+def fetch_rating(con):
+    try:
+        cur = con.cursor()
+
+        cur.execute("SELECT user_id, rating FROM ratings")
+        ratings_data = cur.fetchall()
+        return ratings_data
+    
+    except sqlite3.Error as e:
+        logging.error(f"Error fetching table ratings: {e}")

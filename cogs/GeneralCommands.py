@@ -9,8 +9,8 @@ from .utils import (
     display_leaderboard,
     calculate_average_rating,
     check_rating,
-    RateView
 )
+from .db_utils import db_init, fetch_config, insert_rating, fetch_challenge_data, insert_leaderboard, len_leaderboard
 import logging
 import datetime
 import aiohttp
@@ -24,8 +24,9 @@ logging.basicConfig(
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logging.getLogger("flask.app").setLevel(logging.ERROR)
 
-# Class to handle the feedback forms
+con = db_init()
 
+# Class to handle the feedback forms
 
 class FeedbackModal(discord.ui.Modal, title="Send us your feedback"):
     fb_title = discord.ui.TextInput(
@@ -74,7 +75,6 @@ class FeedbackModal(discord.ui.Modal, title="Send us your feedback"):
             ephemeral=True,
         )
 
-
 # Class that handles the behaviour of rate button
 
 
@@ -86,16 +86,15 @@ class RateButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         user_id = str(interaction.user.id)
-        challenge_data = load_challenge_data()
 
-        challenge_data.setdefault('ratings', []).append(
-            {'user': user_id, 'rating': self.rating}
-        )
-        save_challenge_data(challenge_data)
-
-        await interaction.response.send_message(
-            f'You rated the challenge {self.rating} stars!', ephemeral=True
-        )
+        if insert_rating(con, user_id, ratings):
+            await interaction.response.send_message(
+                f'You rated the challenge {self.rating} stars!', ephemeral=True
+            )
+        else:
+            await interaction.response.send_message(
+                f'You already rated the challenge.'
+            )
 
 
 class GeneralCommands(commands.Cog):
@@ -104,12 +103,12 @@ class GeneralCommands(commands.Cog):
         self.bot = bot
         # Overriding default discord help message for our very own embeded one.
         self.bot.remove_command("help")
-        self.config = load_config()
+        self.config = fetch_config(con)
 
     @discord.app_commands.command(name="submit", description="Used to Submit flag.")
     async def submit(self, interaction: discord.Interaction, flag: str) -> None:
-        self.config = load_config()
-        challenge_data = load_challenge_data()
+        self.config = fetch_config(con)
+        challenge_data = fetch_challenge_data(con)
 
         if not challenge_data:
             await interaction.response.send_message(
@@ -117,25 +116,18 @@ class GeneralCommands(commands.Cog):
             )
             return
 
-        if (
-            "answer" in challenge_data
-            and str(interaction.user.id) in challenge_data["leaderboard"]
-        ):
+        if (challenge_data["answer"] != "" and insert_leaderboard(con, interaction.user.id)):
             await interaction.response.send_message(
                 "You've already submitted the correct answer!", ephemeral=True
             )
             return
 
-        if "answer" in challenge_data and challenge_data["answer"] == flag:
-            leaderboard_length = len(challenge_data["leaderboard"])
-            if str(interaction.user.id) not in challenge_data["leaderboard"]:
-                challenge_data["leaderboard"][
-                    str(interaction.user.id)
-                ] = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S.%f")
-                save_challenge_data(challenge_data)
+        if (challenge_data["answer"] != "" and challenge_data["answer"] == flag):
+            leaderboard_length = len_leaderboard(con)
+            if insert_leaderboard(con, interaction.user.id):    # Checking if we can insert the user id or if it already exsists?
 
                 master = self.bot.get_user(challenge_data["master_id"])
-                if master:
+                if master != "":
                     await master.send(
                         f"{interaction.user.name} just solved the challenge!"
                     )
@@ -217,9 +209,7 @@ class GeneralCommands(commands.Cog):
             )
             return
 
-        if challenge_data.get("leaderboard", {}) and not challenge_data.get(
-            "hints_revealed", False
-        ):
+        if len_leaderboard == 0 and challenge_data["hints_released"] != 0:
             hint_msg = "Hint will no longer be printed since someone has already solved the challenge."
         elif current_time < hint_time:
             hours_hint, remainder_hint = divmod(time_to_hint.total_seconds(), 3600)

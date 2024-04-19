@@ -4,7 +4,7 @@ import datetime
 import json
 import discord
 from discord.ext import commands
-from .db_utils import db_init, fetch_config, update_confi, fetch_challenge_data, remove_challenge_data
+from .db_utils import db_init, fetch_config, update_config, fetch_challenge_data, remove_challenge_data, len_leaderboard, update_hint, fetch_rating
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s"
@@ -59,9 +59,12 @@ con = db_init()
 async def end_challenge(bot):
     config = fetch_config(con)
     challenge_data = fetch_challenge_data(con)
+    
+    if challenge_data is None:
+        return 
 
-    if "start_time" != "":
-        start_time = datetime.datetime.fromtimestamp(challenge_data["start_time"])
+    if challenge_data["start_time"] != "":
+        start_time = datetime.datetime.strptime(challenge_data["start_time"], '%Y-%m-%d %H:%M:%S')
         elapsed_time = datetime.datetime.utcnow() - start_time
         remaining_time = 86400 - elapsed_time.total_seconds()
 
@@ -75,19 +78,19 @@ async def end_challenge(bot):
     if challenge_channel:
         await display_leaderboard(bot)
         await challenge_channel.send(
-            f"Day-{challenge_data["day"]} Challenge has finished!"
+            f"Day-{challenge_data['day']} Challenge has finished!"
         )
         logging.info(
-            f"Day-{challenge_data["day"]} challenge has been finished..."
+            f"Day-{challenge_data['day']} challenge has been finished..."
         )
 
-        if 'writeup' in challenge_data and challenge_data["writeup"]:
+        if 'writeup' in challenge_data and challenge_data['writeup']:
             await challenge_channel.send(
-                f"Writeup for Day-{challenge_data["day"]}: {challenge_data["writeup"]}"
+                f"Writeup for Day-{challenge_data['day']}: {challenge_data['writeup']}"
             )
         else:
             await challenge_channel.send(
-                f"No writeup provided for Day-{challenge_data["day"]}."
+                f"No writeup provided for Day-{challenge_data['day']}."
             )
 
         avg = calculate_average_rating()
@@ -99,41 +102,42 @@ async def end_challenge(bot):
             await challenge_channel.send("No ratings received for the challenge.")
         remove_challenge_data(con)
 
-
 async def display_leaderboard(bot):
-    config = load_config()
-    challenge_data = load_challenge_data()
-    if not challenge_data:
+    config = fetch_config(con)
+    leaderboard_data = fetch_leaderboard(con)
+
+    if not leaderboard_data:
+        logging.warning("No leaderboard data available.")
         return
 
-    sorted_leaderboard = sorted(
-        challenge_data.get("leaderboard", {}).items(), key=lambda x: x[1]
-    )
-
-    leaderboard_msg = f"🏆 **The winners of today's CTF (Day-{challenge_data.get('day', 'N/A')}) are:** 🏆\n"
+    leaderboard_msg = f"🏆 **The winners of today's CTF are:** 🏆\n"
     position_emojis = ["🥇", "🥈", "🥉"]
-    for i, (user_id, _) in enumerate(sorted_leaderboard[:3]):
+
+    for i, (user_id, timestamp) in enumerate(leaderboard_data[:3]):
         user = bot.get_user(int(user_id))
         if user:
             leaderboard_msg += f"{position_emojis[i]} {user.mention}\n"
 
-    challenge_channel = bot.get_channel(int(config.get("channel_id", 0)))
+    challenge_channel = bot.get_channel(config['leaderboard_channel_id'])
     if challenge_channel:
         await challenge_channel.send(leaderboard_msg)
 
-
 def calculate_average_rating():
-    challenge_data = load_challenge_data()
-    if not challenge_data or "ratings" not in challenge_data:
+    challenge_data = fetch_challenge_data(con)
+    ratings_data = fetch_rating(con)
+    
+    if challenge_data and ratings_data:
+        total_ratings = sum(rating[1] for rating in ratings_data)
+        num_ratings = len(ratings_data)
+        
+        if num_ratings > 0:
+            average_rating = total_ratings / num_ratings
+            return average_rating
+        else:
+            return None
+    else:
+        logging.warning("No challenge data or ratings data available. Unable to calculate average rating.")
         return None
-
-    total_ratings = sum(rate["rating"] for rate in challenge_data["ratings"])
-    if not total_ratings or not challenge_data["ratings"]:
-        return None
-
-    average_rating = total_ratings / len(challenge_data["ratings"])
-    return average_rating
-
 
 class RateView(discord.ui.View):
 
@@ -146,37 +150,16 @@ class RateView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return True
 
-
-class RateButton(discord.ui.Button):
-
-    def __init__(self, rating: int):
-        super().__init__(label=str(rating), custom_id=f'rate_{rating}')
-        self.rating = rating
-
-    async def callback(self, interaction: discord.Interaction):
-        user_id = str(interaction.user.id)
-        challenge_data = load_challenge_data()
-
-        challenge_data.setdefault('ratings', []).append(
-            {'user': user_id, 'rating': self.rating}
-        )
-        save_challenge_data(challenge_data)
-
-        await interaction.response.send_message(
-            f'You rated the challenge {self.rating} stars!', ephemeral=True
-        )
-
-
 async def release_hints(bot):
     logging.info("Function release_hints started.")
 
-    challenge_data = load_challenge_data()
+    challenge_data = fetch_challenge_data(con)
     if not challenge_data:
         logging.warning("No challenge data available. Exiting release_hints.")
         return
 
     if "start_time" in challenge_data:
-        start_time = datetime.datetime.fromtimestamp(challenge_data["start_time"])
+        start_time = datetime.datetime.strptime(challenge_data["start_time"], '%Y-%m-%d %H:%M:%S')
         elapsed_time = datetime.datetime.utcnow() - start_time
         remaining_time = 21600 - elapsed_time.total_seconds()
 
@@ -187,33 +170,33 @@ async def release_hints(bot):
             "start_time not found in challenge_data. Unable to determine hint release time."
         )
 
-    config = load_config()
+    config = fetch_config(con)
 
-    if not challenge_data.get("hints_revealed", False) and not challenge_data.get(
-        "leaderboard", {}
-    ):
-        challenge_channel = bot.get_channel(int(config.get("channel_id", 0)))
+    if challenge_data["hints"] != "" and len_leaderboard(con) == 0:
+        challenge_channel = bot.get_channel(config["challenge_channel"])
         if challenge_channel:
             await challenge_channel.send(
-                f"Hint for Day-{challenge_data.get('day', 'N/A')}: `{challenge_data.get('hints', 'No hints available')}`"
+                f"Hint for Day-{challenge_data['day']}: `{challenge_data['hints']}`"
             )
-            logging.info(f"Hint for Day-{challenge_data.get('day', 'N/A')} released.")
+            logging.info(f"Hint for Day-{challenge_data['day']} released.")
 
-        challenge_data["hints_revealed"] = True
-        save_challenge_data(challenge_data)
+        update_hint(con)
     else:
         logging.warning(
             "Hints were either already revealed or there is an active leaderboard. No hint was released."
         )
 
-
 async def check_rating(interaction):
-    challenge_data = load_challenge_data()
-    user_ratings = [rating['user'] for rating in challenge_data.get('ratings', [])]
-    if str(interaction.user.id) not in user_ratings:
-        view = RateView()
-        await interaction.followup.send(
-            "Rate today's challenge:", view=view, ephemeral=True
-        )
+    challenge_data = fetch_challenge_data(con)
+    if challenge_data:
+        user_ratings = [rating['user_id'] for rating in fetch_rating(con)]
+        if str(interaction.user.id) not in user_ratings:
+            view = RateView()
+            await interaction.followup.send(
+                "Rate today's challenge:", view=view, ephemeral=True
+            )
+        else:
+            await interaction.followup.send("You've already submitted!", ephemeral=True)
     else:
-        await interaction.followup.send("You've already submitted!", ephemeral=True)
+        logging.warning("No challenge data available. Unable to check rating.")
+

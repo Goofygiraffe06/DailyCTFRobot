@@ -28,7 +28,6 @@ logging.getLogger("flask.app").setLevel(logging.ERROR)
 con = db_init()
 config = fetch_challenge_data(con)
 
-
 class AttachmentsButton(discord.ui.View):
     def __init__(self, attachment_url):
         super().__init__()

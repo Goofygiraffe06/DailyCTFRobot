@@ -3,3 +3,4 @@ __pycache__/
 .env/
 cogs/__pycache__/
 config.json/
+bot.db

@@ -123,7 +123,7 @@ def fetch_config(con):
         cur = con.cursor()
 
         cur.execute("SELECT * FROM config")
-        row - cur.fetchone()
+        row = cur.fetchone()
         return row
     except sqlite3.Error as e:
         logging.error(f"Error fetching table config: {e}")

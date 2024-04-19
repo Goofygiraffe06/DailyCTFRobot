@@ -62,7 +62,7 @@ class SetChallengeModal(discord.ui.Modal, title = title):
         style=discord.TextStyle.short,
         label="Attachment",
         required=False,
-        placeholder="Attach a single URL for files related to the challenge"
+        placeholder="Optional: Attach a single URL for files related to the challenge"
     )
 
     hints_input = discord.ui.TextInput(
@@ -99,28 +99,30 @@ class SetChallengeModal(discord.ui.Modal, title = title):
                             value=f"```{challenge_data['description']}```")
             embed.set_footer(text=f"Challenge submitted by {interaction.user.name}")
             challenge_channel = self.bot.get_channel(int(self.config["channel_id"]))
-            await challenge_channel.send(challenge_ping)
 
             if len(challenge_data['attachment']) == 0:  # idk, for what reason is None reurning false positives ?_?
+                await challenge_channel.send(challenge_ping)
                 await challenge_channel.send(embed=embed)
             else:
+                await challenge_channel.send(challenge_ping)
                 await challenge_channel.send(embed=embed, view=AttachmentsButton(challenge_data["attachment"]))
 
             await interaction.response.send_message(
                 f"Challenge set successfully for Day {challenge_data['day']}!", ephemeral=True
-            )
-
+            )   
+       
         except Exception as e:
             logging.error(f"Error in on_submit: {e}")
-            await interaction.response.send_message(
-                f"Failed to set challenge. Please check logs.", ephemeral=True
-            )
+            if "Scheme" in str(e):
+                await interaction.response.send_message("Invalid URL scheme. Please provide a valid URL with 'http', 'https', or 'discord' scheme.", ephemeral=True)
+            else:
+                await interaction.response.send_message(
+                    f"Failed to set challenge. Please check logs.", ephemeral=True
+                )
 
     async def on_error(self, interaction: discord.Interaction, error: Exception):
         logging.error(f"Error in SetChallengeModal: {error}")
-        await interaction.response.send_message(
-            f"Failed to set challenge.\nError: {error}", ephemeral=True
-        )
+        await interaction.response.send_message(f"Failed to set challenge.\nError: {error}", ephemeral=True)
 
 
 class AdminCommands(commands.Cog):
@@ -213,7 +215,7 @@ class AdminCommands(commands.Cog):
                 )
             else:
                 await challenge_channel.send(
-                    f"No official writeup for Day-{challenge_data['da,y']}"
+                    f"No official writeup for Day-{challenge_data['day']}"
                 )
             avg = calculate_average_rating()
             if avg is not None:

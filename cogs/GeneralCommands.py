@@ -87,7 +87,7 @@ class RateButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         user_id = str(interaction.user.id)
 
-        if insert_rating(con, user_id, ratings):
+        if insert_rating(con, user_id, self.rating):
             await interaction.response.send_message(
                 f'You rated the challenge {self.rating} stars!', ephemeral=True
             )
@@ -184,8 +184,8 @@ class GeneralCommands(commands.Cog):
         description="Tells the time left for the hint and the challenge end.",
     )
     async def timeleft(self, interaction: discord.Interaction) -> None:
-        self.config = load_config()
-        challenge_data = load_challenge_data()
+        self.config = fetch_config(con)
+        challenge_data = fetch_challenge_data(con)
 
         if not challenge_data:
             await interaction.response.send_message(
@@ -193,8 +193,7 @@ class GeneralCommands(commands.Cog):
             )
             return
 
-        # The start time is stores as an unix timestamp allowing us easily perform arithemetic operations on it.
-        start_time = datetime.datetime.fromtimestamp(challenge_data["start_time"])
+        start_time = start_time = datetime.datetime.strptime(challenge_data["start_time"], '%Y-%m-%d %H:%M:%S')
         current_time = datetime.datetime.utcnow()
 
         hint_time = start_time + datetime.timedelta(hours=6)
@@ -204,9 +203,7 @@ class GeneralCommands(commands.Cog):
         time_to_end = end_time - current_time
 
         if current_time > end_time:
-            await interaction.response.send_message(
-                "The challenge has already ended.", ephemeral=True
-            )
+            await interaction.response.send_message("The challenge has already ended.", ephemeral=True)
             return
 
         if len_leaderboard == 0 and challenge_data["hints_released"] != 0:
@@ -218,19 +215,16 @@ class GeneralCommands(commands.Cog):
         else:
             hint_msg = "Hint has been released!"
 
-        hours_end, remainder_end = divmod(time_to_end.total_seconds(), 3600)
-        minutes_end, seconds_end = divmod(remainder_end, 60)
-        end_msg = f"Time left for challenge end: {int(hours_end)}:{int(minutes_end):02}:{int(seconds_end):02}"
+            hours_end, remainder_end = divmod(time_to_end.total_seconds(), 3600)
+            minutes_end, seconds_end = divmod(remainder_end, 60)
+            end_msg = f"Time left for challenge end: {int(hours_end)}:{int(minutes_end):02}:{int(seconds_end):02}"
 
-        await interaction.response.send_message(
-            f"{hint_msg}\n{end_msg}", ephemeral=True
-        )
+            await interaction.response.send_message(f"{hint_msg}\n{end_msg}", ephemeral=True)
 
     @discord.app_commands.command(
         name="feedback", description="Submit feedback, bugs, or suggestions."
     )
     async def _feedback(self, interaction: discord.Interaction) -> None:
-        self.config = load_config()
         logging.info(
             f"Feedback command invoked by {interaction.user.name} (ID: {interaction.user.id})"
         )
@@ -241,7 +235,7 @@ class GeneralCommands(commands.Cog):
         name="rate", description="Rate the challenge out of 5."
     )
     async def rate_challenge(self, interaction: discord.Interaction):
-        challenge_data = load_challenge_data()
+        challenge_data = fetch_challenge_data()
         if not challenge_data:
             await interaction.response.send_message(
                 "No active challenge currently!", ephemeral=True

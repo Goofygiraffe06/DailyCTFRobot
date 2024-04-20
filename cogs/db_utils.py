@@ -94,6 +94,8 @@ def insert_challenge(con, values):
         cur = con.cursor()
         cur.execute("""
             DELETE FROM challenge_data
+            DELETE FROM ratings
+            DELETE FROM leaderboard
         """)
         con.commit()
 
@@ -216,12 +218,14 @@ def remove_challenge_data(con):
         cur = con.cursor()
 
         cur.execute("DELETE FROM challenge_data")
+        cur.execute("DELETE FROM leaderboard")
+        cur.execute("DELETE FROM ratings")
         logging.info("Deleted table challenge_data successfully.")
 
     except sqlite3.Error as e:
         logging.error(f"Error deleting table challenge_data: {e}")
 
-def fetch_leaderboard(con):
+def fetch_leaderboard_data(con):
     try:
         cur = con.cursor()
 

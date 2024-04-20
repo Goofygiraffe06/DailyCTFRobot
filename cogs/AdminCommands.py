@@ -11,7 +11,7 @@ from .utils import (
     end_challenge,
     calculate_average_rating,
 )
-from .db_utils import db_init, fetch_config, insert_challenge, fetch_challenge_data
+from .db_utils import db_init, fetch_config, insert_challenge, fetch_challenge_data, fetch_leaderboard_data, remove_challenge_data
 import logging
 import datetime
 from discord.ui import Modal, TextInput
@@ -172,6 +172,7 @@ class AdminCommands(commands.Cog):
     async def shutdown(self, interaction: discord.Interaction) -> None:
         try:
             self.config = fetch_config(con)
+            self.leaderboard_data = fetch_leaderboard_data(con)
             if self.config  is None:
                 await interaction.response.send_message("Failed to fetch config, Did you run `/setup`?")
                 return 
@@ -198,7 +199,7 @@ class AdminCommands(commands.Cog):
             challenge_channel = self.bot.get_channel(
                 int(self.config["leaderboard_channel_id"])
             )
-            if challenge_data["leaderboard"]:
+            if self.leaderboard_data:
                 await display_leaderboard(self.bot)
             else:
                 await challenge_channel.send("No one has solved the challenge yet.")
@@ -221,7 +222,8 @@ class AdminCommands(commands.Cog):
                 )
             else:
                 await challenge_channel.send("No ratings received for the challenge.")
-            save_challenge_data({})
+
+            remove_challenge_data(con)
             await interaction.response.send_message(
                 "Challenge has been shut down and leaderboard has been printed.",
                 ephemeral=True,

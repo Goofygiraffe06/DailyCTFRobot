@@ -4,7 +4,7 @@ import datetime
 import json
 import discord
 from discord.ext import commands
-from .db_utils import db_init, fetch_config, update_config, fetch_challenge_data, remove_challenge_data, len_leaderboard, update_hint, fetch_rating, insert_rating
+from .db_utils import db_init, fetch_config, update_config, fetch_challenge_data, remove_challenge_data, len_leaderboard, update_hint, fetch_rating, insert_rating, fetch_leaderboard_data
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s"
@@ -104,7 +104,7 @@ async def end_challenge(bot):
 
 async def display_leaderboard(bot):
     config = fetch_config(con)
-    leaderboard_data = fetch_leaderboard(con)
+    leaderboard_data = fetch_leaderboard_data(con)
 
     if not leaderboard_data:
         logging.warning("No leaderboard data available.")

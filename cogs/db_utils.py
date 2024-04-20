@@ -48,7 +48,7 @@ def create_tables(con):
 
         cur.execute("""
             CREATE TABLE IF NOT EXISTS leaderboard (
-                user_id INTEGER PRIMARY KEY,
+                user_id INTEGER,
                 submission TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -108,15 +108,8 @@ def insert_challenge(con, values):
 def insert_leaderboard(con, user_id: int):
     try:
         cur = con.cursor()
-
-        cur.execute("SELECT * FROM leaderboard WHERE user_id = ?", (user_id,))
-        existing_record = cur.fetchone()
-
-        if existing_record:
-            return False
-        else:
-            cur.execute(
-                "INSERT INTO leaderboard (user_id, submission) VALUES (?, ?)", user_id, submission)
+        
+        cur.execute("INSERT INTO leaderboard (user_id) VALUES (?)", (user_id,))
         con.commit()
         logging.info("Inserted into table leaderboard successfully.")
         return True
@@ -132,9 +125,24 @@ def len_leaderboard(con):
         cur.execute("SELECT COUNT(*) FROM leaderboard")
         rows = cur.fetchone()
 
-        return rows
+        return rows[0]
     except sqlite3.Error as e:
         logging.error(f"Error counting table leaderboard: {e}")
+
+def check_leaderboard(con, user_id: int):
+    try:
+        cur = con.cursor()
+
+        cur.execute("SELECT * FROM leaderboard WHERE user_id = ?", (user_id,))
+        existing_record = cur.fetchone()
+
+        if existing_record:
+            return True
+        else: 
+            return False
+
+    except sqlite3.Error as e:
+        logging.error(f"Error checking table leaderboard: {e}")
 
 def update_hint(con):
     try:
@@ -159,6 +167,7 @@ def insert_rating(con, user_id: int, rating: int):
         else:
             # If the user ID doesn't exist, insert a new row
             cur.execute("INSERT INTO ratings (user_id, rating) VALUES (?, ?)", (user_id, rating))
+            con.commit()
             return True
     except sqlite3.Error as e:
         logging.error(f"Error inserting table rating: {e}")

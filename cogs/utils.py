@@ -4,7 +4,7 @@ import datetime
 import json
 import discord
 from discord.ext import commands
-from .db_utils import db_init, fetch_config, update_config, fetch_challenge_data, remove_challenge_data, len_leaderboard, update_hint, fetch_rating
+from .db_utils import db_init, fetch_config, update_config, fetch_challenge_data, remove_challenge_data, len_leaderboard, update_hint, fetch_rating, insert_rating
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s"
@@ -149,6 +149,25 @@ class RateView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return True
+
+class RateButton(discord.ui.Button):
+
+    def __init__(self, rating: int):
+        super().__init__(label=str(rating), custom_id=f'rate_{rating}')
+        self.rating = rating
+
+    async def callback(self, interaction: discord.Interaction):
+        user_id = str(interaction.user.id)
+        
+        rating_inserted = insert_rating(con, user_id, self.rating)
+        if rating_inserted:
+            await interaction.response.send_message(
+                f'You rated the challenge {self.rating} stars!', ephemeral=True
+            )
+        else:
+            await interaction.response.send_message(
+                f'You already rated the challenge.'
+            )
 
 async def release_hints(bot):
     logging.info("Function release_hints started.")

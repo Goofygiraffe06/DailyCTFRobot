@@ -9,8 +9,10 @@ from .utils import (
     display_leaderboard,
     calculate_average_rating,
     check_rating,
+    RateView,
+    RateButton
 )
-from .db_utils import db_init, fetch_config, insert_rating, fetch_challenge_data, insert_leaderboard, len_leaderboard
+from .db_utils import db_init, fetch_config, insert_rating, fetch_challenge_data, insert_leaderboard, len_leaderboard, fetch_rating, check_leaderboard
 import logging
 import datetime
 import aiohttp
@@ -75,28 +77,6 @@ class FeedbackModal(discord.ui.Modal, title="Send us your feedback"):
             ephemeral=True,
         )
 
-# Class that handles the behaviour of rate button
-
-
-class RateButton(discord.ui.Button):
-
-    def __init__(self, rating: int):
-        super().__init__(label=str(rating), custom_id=f'rate_{rating}')
-        self.rating = rating
-
-    async def callback(self, interaction: discord.Interaction):
-        user_id = str(interaction.user.id)
-
-        if insert_rating(con, user_id, self.rating):
-            await interaction.response.send_message(
-                f'You rated the challenge {self.rating} stars!', ephemeral=True
-            )
-        else:
-            await interaction.response.send_message(
-                f'You already rated the challenge.'
-            )
-
-
 class GeneralCommands(commands.Cog):
 
     def __init__(self, bot):
@@ -115,15 +95,15 @@ class GeneralCommands(commands.Cog):
                 "There's no active challenge right now!", ephemeral=True
             )
             return
-
-        if (challenge_data["answer"] != "" and insert_leaderboard(con, interaction.user.id)):
+        
+        if (challenge_data["answer"] != "" and check_leaderboard(con, interaction.user.id)):
             await interaction.response.send_message(
                 "You've already submitted the correct answer!", ephemeral=True
             )
             return
 
         if (challenge_data["answer"] != "" and challenge_data["answer"] == flag):
-            leaderboard_length = len_leaderboard(con)
+            leaderboard_length = len_leaderboard(con)  
             if insert_leaderboard(con, interaction.user.id):    # Checking if we can insert the user id or if it already exsists?
 
                 master = self.bot.get_user(challenge_data["master_id"])
@@ -132,9 +112,7 @@ class GeneralCommands(commands.Cog):
                         f"{interaction.user.name} just solved the challenge!"
                     )
 
-                    challenge_channel = self.bot.get_channel(
-                        int(self.config["leaderboard_channel_id"])
-                    )
+                    challenge_channel = self.bot.get_channel(self.config["leaderboard_channel_id"])
                     # Logic for the leaderboard messages
                     if leaderboard_length == 0:
                         await challenge_channel.send(
@@ -166,7 +144,7 @@ class GeneralCommands(commands.Cog):
                         display_leaderboard(self.bot)
                     else:
                         await interaction.response.send_message(
-                            f"Correct answer! You're in position {leaderboard_length + 1}. Push harder next time to claim a top spot!",
+                            f"Correct answer! You're in position {leaderboard_length+1}. Push harder next time to claim a top spot!",
                             ephemeral=True,
                         )
                         await check_rating(interaction)
@@ -235,25 +213,28 @@ class GeneralCommands(commands.Cog):
         name="rate", description="Rate the challenge out of 5."
     )
     async def rate_challenge(self, interaction: discord.Interaction):
-        challenge_data = fetch_challenge_data()
+        challenge_data = fetch_challenge_data(con)
+        rating_data = fetch_rating(con)
+
         if not challenge_data:
             await interaction.response.send_message(
                 "No active challenge currently!", ephemeral=True
             )
             return
         # Check if user has already rated
-        for rate in challenge_data.get('ratings', []):
-            if rate.get('user') == str(interaction.user.id):
-                await interaction.response.send_message(
-                    'You have already rated this challenge!', ephemeral=True
-                )
+        if rating_data is None:
+            await interaction.response.send_message(
+                "Failed to fetch ratings. Please try again later.", ephemeral=True
+            )
+            return
+
+        for rating in rating_data:
+            if rating[0] == interaction.user.id:
+                await interaction.response.send_message("You have already rated this challenge!", ephemeral=True)
                 return
 
         view = RateView()
-
-        await interaction.response.send_message(
-            "Rate today's challenge:", view=view, ephemeral=True
-        )
+        await interaction.response.send_message("Rate today's challenge:", view=view, ephemeral=True)
 
 
 async def setup(bot) -> None:

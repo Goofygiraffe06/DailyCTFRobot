@@ -208,14 +208,17 @@ async def release_hints(bot):
 async def check_rating(interaction):
     challenge_data = fetch_challenge_data(con)
     if challenge_data:
-        user_ratings = [rating['user_id'] for rating in fetch_rating(con)]
-        if str(interaction.user.id) not in user_ratings:
-            view = RateView()
-            await interaction.followup.send(
-                "Rate today's challenge:", view=view, ephemeral=True
-            )
-        else:
-            await interaction.followup.send("You've already submitted!", ephemeral=True)
+        ratings = fetch_rating(con)
+        for rating in ratings:
+            if (rating[0] == interaction.user.id): 
+                await interaction.followup.send("You've already submitted!", ephemeral=True)
+                return
+
+        view = RateView()
+        await interaction.followup.send(
+            "Rate today's challenge:", view=view, ephemeral=True
+        )
+
     else:
         logging.warning("No challenge data available. Unable to check rating.")
 

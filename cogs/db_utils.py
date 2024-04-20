@@ -95,6 +95,7 @@ def insert_challenge(con, values):
         cur.execute("""
             DELETE FROM challenge_data
         """)
+        con.commit()
 
         cur.execute("""INSERT INTO challenge_data (master_id, description, answer, attachment, hints, writeup)
                         VALUES (?, ?, ?, ?, ?, ?)""", values)

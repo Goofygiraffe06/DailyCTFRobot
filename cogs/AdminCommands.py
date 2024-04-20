@@ -28,6 +28,13 @@ logging.getLogger("flask.app").setLevel(logging.ERROR)
 con = db_init()
 config = fetch_challenge_data(con)
 
+def generate_title():
+    config = fetch_challenge_data(con)
+    if config and 'day' in config:
+        return f"Set a Challenge for Day {config['day']+1}"
+    else:
+        return "Set a Challenge"
+
 class AttachmentsButton(discord.ui.View):
     def __init__(self, attachment_url):
         super().__init__()
@@ -35,8 +42,8 @@ class AttachmentsButton(discord.ui.View):
         self.add_item(button)
 
 # Modal Class to handle the setchallenge
-title = f"Set a Challenge for Day {config['day']}" if config is not None and 'day' in config else "Set a Challenge"
-class SetChallengeModal(discord.ui.Modal, title = title):
+
+class SetChallengeModal(discord.ui.Modal, title = generate_title()):
     def __init__(self, bot, config):
         super().__init__()
         self.bot = bot
@@ -111,13 +118,9 @@ class SetChallengeModal(discord.ui.Modal, title = title):
             )   
        
         except Exception as e:
-            logging.error(f"Error in on_submit: {e}")
-            if "Scheme" in str(e):
-                await interaction.response.send_message("Invalid URL scheme. Please provide a valid URL with 'http', 'https', or 'discord' scheme.", ephemeral=True)
-            else:
-                await interaction.response.send_message(
-                    f"Failed to set challenge. Please check logs.", ephemeral=True
-                )
+            await interaction.response.send_message(
+                f"Failed to set challenge. Please check logs.", ephemeral=True
+            )
 
     async def on_error(self, interaction: discord.Interaction, error: Exception):
         logging.error(f"Error in SetChallengeModal: {error}")
@@ -157,11 +160,6 @@ class AdminCommands(commands.Cog):
                 await interaction.response.send_message(
                     "You don't have permission to set a challenge!", ephemeral=True
                 )
-        except Exception as e:
-            logging.error(f"Error in setchallenge: {e}")
-            await interaction.response.send_message(
-                "Failed to set challenge. Please check logs.", ephemeral=True
-            )
         except Exception as e:
             logging.error(f"Error in setchallenge: {e}")
             await interaction.response.send_message(

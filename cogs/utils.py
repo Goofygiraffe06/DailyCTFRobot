@@ -105,22 +105,29 @@ async def end_challenge(bot):
 async def display_leaderboard(bot):
     config = fetch_config(con)
     leaderboard_data = fetch_leaderboard_data(con)
+    challenge_data = fetch_challenge_data(con)
 
     if not leaderboard_data:
         logging.warning("No leaderboard data available.")
         return
 
-    leaderboard_msg = f"🏆 **The winners of today's CTF are:** 🏆\n"
+    # Create an embed object
+    embed = discord.Embed(
+        title=f"🏆 The winners of Day {challenge_data['day']} CTF are: 🏆",
+        description="Here are the top performers!",
+        color=discord.Color.blue() 
+    )
+
     position_emojis = ["🥇", "🥈", "🥉"]
 
     for i, (user_id, timestamp) in enumerate(leaderboard_data[:3]):
         user = bot.get_user(int(user_id))
         if user:
-            leaderboard_msg += f"{position_emojis[i]} {user.mention}\n"
-
+            # Add a field for each user in the leaderboard
+            embed.add_field(name=f"{position_emojis[i]} {user.name}", value="", inline=False)
     challenge_channel = bot.get_channel(config['leaderboard_channel_id'])
     if challenge_channel:
-        await challenge_channel.send(leaderboard_msg)
+        await challenge_channel.send(embed=embed)
 
 def calculate_average_rating():
     challenge_data = fetch_challenge_data(con)
@@ -166,7 +173,7 @@ class RateButton(discord.ui.Button):
             )
         else:
             await interaction.response.send_message(
-                f'You already rated the challenge.'
+                f'You already rated the challenge.', ephemeral=True
             )
 
 async def release_hints(bot):

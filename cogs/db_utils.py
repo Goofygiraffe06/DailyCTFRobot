@@ -92,11 +92,10 @@ def update_config(con, key: str, value: int):
 def insert_challenge(con, values):
     try:
         cur = con.cursor()
-        cur.execute("""
-            DELETE FROM challenge_data
-            DELETE FROM ratings
-            DELETE FROM leaderboard
-        """)
+        cur.execute("DELETE FROM challenge_data")
+        cur.execute("DELETE FROM leaderboard")
+        cur.execute("DELETE FROM ratings")
+
         con.commit()
 
         cur.execute("""INSERT INTO challenge_data (master_id, description, answer, attachment, hints, writeup)

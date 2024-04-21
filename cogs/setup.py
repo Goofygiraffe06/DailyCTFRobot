@@ -7,8 +7,9 @@ import logging
 from discord.ext.commands import has_permissions, CheckFailure
 
 # Initialize logging
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s | %(levelname)s | %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s"
+)
 
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logging.getLogger("flask.app").setLevel(logging.ERROR)
@@ -30,14 +31,14 @@ class Config:
         update_config(self.con, key, value)
         self.con.commit()
 
+
 # Create a select menu for roles
 
 
 class RoleSelect(discord.ui.Select):
     def __init__(self, roles, config):
         options = [
-            discord.SelectOption(label=role.name, value=str(role.id))
-            for role in roles
+            discord.SelectOption(label=role.name, value=str(role.id)) for role in roles
         ]
         super().__init__(placeholder="Select the CTF role...", options=options, row=0)
         self.config = config
@@ -48,6 +49,7 @@ class RoleSelect(discord.ui.Select):
             f"Selected Role: <@&{self.values[0]}>", ephemeral=True
         )
 
+
 # Create a select menu for channels
 
 
@@ -55,9 +57,12 @@ class ChannelSelect(discord.ui.Select):
     def __init__(self, channels, config):
         options = [
             discord.SelectOption(label=channel.name, value=str(channel.id))
-            for channel in channels if isinstance(channel, discord.TextChannel)
+            for channel in channels
+            if isinstance(channel, discord.TextChannel)
         ]
-        super().__init__(placeholder="Select the announcement channel...", options=options, row=1)
+        super().__init__(
+            placeholder="Select the announcement channel...", options=options, row=1
+        )
         self.config = config
 
     async def callback(self, interaction: discord.Interaction):
@@ -71,9 +76,12 @@ class LeaderboardChannelSelect(discord.ui.Select):
     def __init__(self, channels, config):
         options = [
             discord.SelectOption(label=channel.name, value=str(channel.id))
-            for channel in channels if isinstance(channel, discord.TextChannel)
+            for channel in channels
+            if isinstance(channel, discord.TextChannel)
         ]
-        super().__init__(placeholder='Select the leaderboard channel...', options=options, row=2)
+        super().__init__(
+            placeholder="Select the leaderboard channel...", options=options, row=2
+        )
         self.config = config
 
     async def callback(self, interaction: discord.Interaction):
@@ -81,6 +89,7 @@ class LeaderboardChannelSelect(discord.ui.Select):
         await interaction.response.send_message(
             f"Selected Leaderboard Channel: <#{self.values[0]}>", ephemeral=True
         )
+
 
 # Add individual drop-down menu into a single modal
 
@@ -99,23 +108,27 @@ class Setup(commands.Cog):
         self.con = con
         self.config = Config(con)
 
-    @discord.app_commands.command(name="setup", description="Setup bot settings for the server.")
+    @discord.app_commands.command(
+        name="setup", description="Setup bot settings for the server."
+    )
     @has_permissions(administrator=True)
     async def setup(self, interaction: discord.Interaction) -> None:
         logging.info(
-            f"Setup command invoked by {interaction.user.name} (ID: {interaction.user.id}) in server: {interaction.guild.name} (ID: {interaction.guild.id})")
+            f"Setup command invoked by {interaction.user.name} (ID: {interaction.user.id}) in server: {interaction.guild.name} (ID: {interaction.guild.id})"
+        )
         roles = interaction.guild.roles
         channels = interaction.guild.channels
         view = SetupView(roles, channels, self.config)
         await interaction.response.send_message(
-            "Please select the appropriate role and channel:",
-            view=view, ephemeral=True
+            "Please select the appropriate role and channel:", view=view, ephemeral=True
         )
 
     @setup.error
     async def setup_error(self, interaction, error):
         if isinstance(error, CheckFailure):
-            await interaction.response.send_message("You don't have permission to use this command!", ephemeral=True)
+            await interaction.response.send_message(
+                "You don't have permission to use this command!", ephemeral=True
+            )
             logging.warning(
                 f"Unauthorized setup attempt by {interaction.user.name} (ID: {interaction.user.id}) in server: {interaction.guild.name} (ID: {interaction.guild.id})"
             )

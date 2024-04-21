@@ -7,7 +7,14 @@ from .utils import (
     end_challenge,
     calculate_average_rating,
 )
-from .db_utils import db_init, fetch_config, insert_challenge, fetch_challenge_data, fetch_leaderboard_data, remove_challenge_data
+from .db_utils import (
+    db_init,
+    fetch_config,
+    insert_challenge,
+    fetch_challenge_data,
+    fetch_leaderboard_data,
+    remove_challenge_data,
+)
 import logging
 import datetime
 from discord.ui import Modal, TextInput
@@ -24,22 +31,28 @@ logging.getLogger("flask.app").setLevel(logging.ERROR)
 con = db_init()
 config = fetch_challenge_data(con)
 
+
 def generate_title():
     config = fetch_challenge_data(con)
-    if config and 'day' in config:
+    if config and "day" in config:
         return f"Set a Challenge for Day {config['day']+1}"
     else:
         return "Set a Challenge"
 
+
 class AttachmentsButton(discord.ui.View):
     def __init__(self, attachment_url):
         super().__init__()
-        button = discord.ui.Button(label="📎 Attachment", style=discord.ButtonStyle.url, url=attachment_url)
+        button = discord.ui.Button(
+            label="📎 Attachment", style=discord.ButtonStyle.url, url=attachment_url
+        )
         self.add_item(button)
+
 
 # Modal Class to handle the setchallenge
 
-class SetChallengeModal(discord.ui.Modal, title = generate_title()):
+
+class SetChallengeModal(discord.ui.Modal, title=generate_title()):
     def __init__(self, bot, config):
         super().__init__()
         self.bot = bot
@@ -51,7 +64,7 @@ class SetChallengeModal(discord.ui.Modal, title = generate_title()):
         required=True,
         max_length=2000,
         placeholder="Description of the challenge",
-    ) 
+    )
 
     answer_input = discord.ui.TextInput(
         style=discord.TextStyle.short,
@@ -64,7 +77,7 @@ class SetChallengeModal(discord.ui.Modal, title = generate_title()):
         style=discord.TextStyle.short,
         label="Attachment",
         required=False,
-        placeholder="Optional: Attach a single URL for files related to the challenge"
+        placeholder="Optional: Attach a single URL for files related to the challenge",
     )
 
     hints_input = discord.ui.TextInput(
@@ -90,29 +103,38 @@ class SetChallengeModal(discord.ui.Modal, title = generate_title()):
             hints = self.hints_input.value
             writeup = self.writeup_input.value
 
-            insert_challenge(con, (interaction.user.id, description, answer, attachment, hints, writeup))
-            
+            insert_challenge(
+                con,
+                (interaction.user.id, description, answer, attachment, hints, writeup),
+            )
+
             challenge_data = fetch_challenge_data(con)
 
-            challenge_ping = "@everyone"  # Maybe in the future I will change this to a specific role during setup process
-            
+            # Maybe in the future I will change this to a specific role during setup process
+            challenge_ping = "@everyone"
+
             embed = discord.Embed(title=f"Day: {challenge_data['day']} Challenge")
-            embed.add_field(name="Description:",
-                            value=f"```{challenge_data['description']}```")
+            embed.add_field(
+                name="Description:", value=f"```{challenge_data['description']}```"
+            )
             embed.set_footer(text=f"Challenge submitted by {interaction.user.name}")
             challenge_channel = self.bot.get_channel(int(self.config["channel_id"]))
 
-            if len(challenge_data['attachment']) == 0:  # idk, for what reason is None reurning false positives ?_?
+            # idk, for what reason is None reurning false positives ?_?
+            if len(challenge_data["attachment"]) == 0:
                 await challenge_channel.send(challenge_ping)
                 await challenge_channel.send(embed=embed)
             else:
                 await challenge_channel.send(challenge_ping)
-                await challenge_channel.send(embed=embed, view=AttachmentsButton(challenge_data["attachment"]))
+                await challenge_channel.send(
+                    embed=embed, view=AttachmentsButton(challenge_data["attachment"])
+                )
 
             await interaction.response.send_message(
-                f"Challenge set successfully for Day {challenge_data['day']}!", ephemeral=True
-            )   
-       
+                f"Challenge set successfully for Day {challenge_data['day']}!",
+                ephemeral=True,
+            )
+
         except Exception as e:
             await interaction.response.send_message(
                 f"Failed to set challenge. Please check logs.", ephemeral=True
@@ -120,7 +142,9 @@ class SetChallengeModal(discord.ui.Modal, title = generate_title()):
 
     async def on_error(self, interaction: discord.Interaction, error: Exception):
         logging.error(f"Error in SetChallengeModal: {error}")
-        await interaction.response.send_message(f"Failed to set challenge.\nError: {error}", ephemeral=True)
+        await interaction.response.send_message(
+            f"Failed to set challenge.\nError: {error}", ephemeral=True
+        )
 
 
 class AdminCommands(commands.Cog):
@@ -137,11 +161,11 @@ class AdminCommands(commands.Cog):
     async def setchallenge(self, interaction: discord.Interaction) -> None:
         try:
             self.config = fetch_config(con)
-            
+
             if self.config is None:
                 await interaction.response.send_message(
-                "Failed to fetch config, Did you run `/setup`?", ephemeral=True
-            )
+                    "Failed to fetch config, Did you run `/setup`?", ephemeral=True
+                )
                 return
 
             if (
@@ -169,9 +193,11 @@ class AdminCommands(commands.Cog):
         try:
             self.config = fetch_config(con)
             self.leaderboard_data = fetch_leaderboard_data(con)
-            if self.config  is None:
-                await interaction.response.send_message("Failed to fetch config, Did you run `/setup`?")
-                return 
+            if self.config is None:
+                await interaction.response.send_message(
+                    "Failed to fetch config, Did you run `/setup`?"
+                )
+                return
 
             if (
                 discord.utils.get(
@@ -203,7 +229,7 @@ class AdminCommands(commands.Cog):
             await challenge_channel.send(
                 f"Correct answer for Day-{challenge_data['day']} was: ||`{challenge_data['answer']}`||"
             )
-            if challenge_data['writeup']:
+            if challenge_data["writeup"]:
                 await challenge_channel.send(
                     f"Official Writeup: {challenge_data['writeup']}"
                 )

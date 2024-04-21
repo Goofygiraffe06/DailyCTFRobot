@@ -23,16 +23,19 @@ def db_init():
 def create_tables(con):
     try:
         cur = con.cursor()
-        cur.execute("""
+        cur.execute(
+            """
             CREATE TABLE IF NOT EXISTS config (
                 id INTEGER PRIMARY KEY,
                 channel_id INTEGER,
                 ctf_creators INTEGER,
                 leaderboard_channel_id INTEGER
             )
-        """)
+        """
+        )
 
-        cur.execute("""
+        cur.execute(
+            """
             CREATE TABLE IF NOT EXISTS challenge_data (
                 day INTEGER PRIMARY KEY AUTOINCREMENT,
                 master_id INTEGER,
@@ -44,26 +47,32 @@ def create_tables(con):
                 hints_released INTEGER DEFAULT 0,
                 start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        """)
+        """
+        )
 
-        cur.execute("""
+        cur.execute(
+            """
             CREATE TABLE IF NOT EXISTS leaderboard (
                 user_id INTEGER,
                 submission TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        """)
+        """
+        )
 
-        cur.execute("""
+        cur.execute(
+            """
             CREATE TABLE IF NOT EXISTS ratings (
                 user_id INTEGER PRIMARY KEY,
                 rating INTEGER
             )
-        """)
+        """
+        )
 
         con.commit()
 
     except sqlite3.Error as e:
         logging.error(f"Error creating tables: {e}")
+
 
 def update_config(con, key: str, value: int):
     try:
@@ -89,6 +98,7 @@ def update_config(con, key: str, value: int):
         logging.error(f"Error updating table config: {e}")
         return False
 
+
 def insert_challenge(con, values):
     try:
         cur = con.cursor()
@@ -98,8 +108,11 @@ def insert_challenge(con, values):
 
         con.commit()
 
-        cur.execute("""INSERT INTO challenge_data (master_id, description, answer, attachment, hints, writeup)
-                        VALUES (?, ?, ?, ?, ?, ?)""", values)
+        cur.execute(
+            """INSERT INTO challenge_data (master_id, description, answer, attachment, hints, writeup)
+                        VALUES (?, ?, ?, ?, ?, ?)""",
+            values,
+        )
         con.commit()
         logging.info("Inserted into table challenge_data successfully.")
         return True
@@ -107,10 +120,11 @@ def insert_challenge(con, values):
         logging.error(f"Error inserting table challenge_data: {e}")
         return False
 
+
 def insert_leaderboard(con, user_id: int):
     try:
         cur = con.cursor()
-        
+
         cur.execute("INSERT INTO leaderboard (user_id) VALUES (?)", (user_id,))
         con.commit()
         logging.info("Inserted into table leaderboard successfully.")
@@ -119,6 +133,7 @@ def insert_leaderboard(con, user_id: int):
     except sqlite3.Error as e:
         logging.error(f"Error inserting table leaderboard: {e}")
         return False
+
 
 def len_leaderboard(con):
     try:
@@ -131,6 +146,7 @@ def len_leaderboard(con):
     except sqlite3.Error as e:
         logging.error(f"Error counting table leaderboard: {e}")
 
+
 def check_leaderboard(con, user_id: int):
     try:
         cur = con.cursor()
@@ -140,11 +156,12 @@ def check_leaderboard(con, user_id: int):
 
         if existing_record:
             return True
-        else: 
+        else:
             return False
 
     except sqlite3.Error as e:
         logging.error(f"Error checking table leaderboard: {e}")
+
 
 def update_hint(con):
     try:
@@ -156,23 +173,26 @@ def update_hint(con):
 
 
 def insert_rating(con, user_id: int, rating: int):
-    try:    
+    try:
         cur = con.cursor()
 
         # Check if the user ID already exists in the table
         cur.execute("SELECT * FROM ratings WHERE user_id = ?", (user_id,))
         existing_rating = cur.fetchone()
-    
+
         if existing_rating:
             # If the user ID exists, return False
             return False
         else:
             # If the user ID doesn't exist, insert a new row
-            cur.execute("INSERT INTO ratings (user_id, rating) VALUES (?, ?)", (user_id, rating))
+            cur.execute(
+                "INSERT INTO ratings (user_id, rating) VALUES (?, ?)", (user_id, rating)
+            )
             con.commit()
             return True
     except sqlite3.Error as e:
         logging.error(f"Error inserting table rating: {e}")
+
 
 def fetch_config(con):
     try:
@@ -184,11 +204,12 @@ def fetch_config(con):
             return {
                 "channel_id": row[1],
                 "ctf_creators": row[2],
-                "leaderboard_channel_id": row[3]
+                "leaderboard_channel_id": row[3],
             }
     except sqlite3.Error as e:
         logging.error(f"Error fetching table config: {e}")
         return None
+
 
 def fetch_challenge_data(con):
     try:
@@ -205,17 +226,18 @@ def fetch_challenge_data(con):
                 "hints": row[5],
                 "writeup": row[6],
                 "hints_released": row[7],
-                "start_time": row[8]
+                "start_time": row[8],
             }
         else:
             return None
     except sqlite3.Error as e:
         logging.error(f"Error fetching challenge data: {e}")
 
+
 def remove_challenge_data(con):
     try:
         cur = con.cursor()
-        
+
         cur.execute("BEGIN TRANSACTION")
 
         cur.execute("DELETE FROM challenge_data")
@@ -227,17 +249,21 @@ def remove_challenge_data(con):
     except sqlite3.Error as e:
         logging.error(f"Error deleting table challenge_data: {e}")
 
+
 def fetch_leaderboard_data(con):
     try:
         cur = con.cursor()
 
-        cur.execute("SELECT user_id, submission FROM leaderboard ORDER BY submission ASC")
+        cur.execute(
+            "SELECT user_id, submission FROM leaderboard ORDER BY submission ASC"
+        )
         leaderboard_data = cur.fetchall()
         return leaderboard_data
 
     except Exception as e:
         logging.error(f"Error fetching leaderboard data. Error: {e}")
         return None
+
 
 def fetch_rating(con):
     try:
@@ -246,6 +272,6 @@ def fetch_rating(con):
         cur.execute("SELECT user_id, rating FROM ratings")
         ratings_data = cur.fetchall()
         return ratings_data
-    
+
     except sqlite3.Error as e:
         logging.error(f"Error fetching table ratings: {e}")

@@ -13,10 +13,11 @@ class misc(commands.Cog):
     async def _ping(self, ctx):
         """Pong with latency!"""
         # Server latency
-        server_latency = round(self.bot.latency * 1000)  # Convert to milliseconds
+        # Convert to milliseconds
+        server_latency = round(self.bot.latency * 1000)
 
         # Gateway latency
-        t = await ctx.send('Calculating...')
+        t = await ctx.send("Calculating...")
         gateway_latency = (
             t.created_at - ctx.message.created_at
         ).total_seconds() * 1000  # Convert to milliseconds
@@ -52,20 +53,20 @@ class misc(commands.Cog):
 
         # General Commands
         general_commands = """
-				`/ping` - Check if the bot is alive.
-				`/submit <flag>` - Submit the CTF flag.
-				`/timeleft` - Tells the time left for the hint and the challenge end.
-				`/feedback` - Submit feedback, bugs, or suggestions.
-				`/rate` - Rate an active challenge.
-				"""
+                `/ping` - Check if the bot is alive.
+                `/submit <flag>` - Submit the CTF flag.
+                `/timeleft` - Tells the time left for the hint and the challenge end.
+                `/feedback` - Submit feedback, bugs, or suggestions.
+                `/rate` - Rate an active challenge.
+                """
         embed.add_field(name="General Commands", value=general_commands, inline=False)
 
         # Admin Commands
         admin_commands = """
-				`/setchallenge` - Create a new challenge.
-				`/shutdown` - Shutdown the active challenge.
-				`/setup` - Setup bot settings for the server.
-				"""
+                `/setchallenge` - Create a new challenge.
+                `/shutdown` - Shutdown the active challenge.
+                `/setup` - Setup bot settings for the server.
+                """
         embed.add_field(
             name="Admin Commands (for CTF creators)", value=admin_commands, inline=False
         )

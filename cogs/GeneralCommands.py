@@ -7,9 +7,18 @@ from .utils import (
     calculate_average_rating,
     check_rating,
     RateView,
-    RateButton
+    RateButton,
 )
-from .db_utils import db_init, fetch_config, insert_rating, fetch_challenge_data, insert_leaderboard, len_leaderboard, fetch_rating, check_leaderboard
+from .db_utils import (
+    db_init,
+    fetch_config,
+    insert_rating,
+    fetch_challenge_data,
+    insert_leaderboard,
+    len_leaderboard,
+    fetch_rating,
+    check_leaderboard,
+)
 import logging
 import datetime
 import aiohttp
@@ -26,6 +35,7 @@ logging.getLogger("flask.app").setLevel(logging.ERROR)
 con = db_init()
 
 # Class to handle the feedback forms
+
 
 class FeedbackModal(discord.ui.Modal, title="Send us your feedback"):
     fb_title = discord.ui.TextInput(
@@ -57,7 +67,10 @@ class FeedbackModal(discord.ui.Modal, title="Send us your feedback"):
         # Send the feedback to the feedback channel via webhook
         async with aiohttp.ClientSession() as session:
             try:
-                webhook = discord.Webhook.from_url("https://discord.com/api/webhooks/1231415807549112360/hIUh0IQA6Cby1hThcZCUkTSEzslJEn7PdoWfNDpnzItgHZk85kBT5h20KxXDTx37yAVe", session=session)
+                webhook = discord.Webhook.from_url(
+                    "https://discord.com/api/webhooks/1231415807549112360/hIUh0IQA6Cby1hThcZCUkTSEzslJEn7PdoWfNDpnzItgHZk85kBT5h20KxXDTx37yAVe",
+                    session=session,
+                )
                 # Send the feedback via the webhook
                 await webhook.send(embed=embed)
             except Exception as e:
@@ -74,8 +87,8 @@ class FeedbackModal(discord.ui.Modal, title="Send us your feedback"):
             ephemeral=True,
         )
 
-class GeneralCommands(commands.Cog):
 
+class GeneralCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         # Overriding default discord help message for our very own embeded one.
@@ -92,16 +105,19 @@ class GeneralCommands(commands.Cog):
                 "There's no active challenge right now!", ephemeral=True
             )
             return
-        
-        if (challenge_data["answer"] != "" and check_leaderboard(con, interaction.user.id)):
+
+        if challenge_data["answer"] != "" and check_leaderboard(
+            con, interaction.user.id
+        ):
             await interaction.response.send_message(
                 "You've already submitted the correct answer!", ephemeral=True
             )
             return
 
-        if (challenge_data["answer"] != "" and challenge_data["answer"] == flag):
-            leaderboard_length = len_leaderboard(con)  
-            if insert_leaderboard(con, interaction.user.id):    # Checking if we can insert the user id or if it already exsists?
+        if challenge_data["answer"] != "" and challenge_data["answer"] == flag:
+            leaderboard_length = len_leaderboard(con)
+            # Checking if we can insert the user id or if it already exsists?
+            if insert_leaderboard(con, interaction.user.id):
 
                 master = self.bot.get_user(challenge_data["master_id"])
                 if master != "":
@@ -109,7 +125,9 @@ class GeneralCommands(commands.Cog):
                         f"{interaction.user.name} just solved the challenge!"
                     )
 
-                    challenge_channel = self.bot.get_channel(self.config["leaderboard_channel_id"])
+                    challenge_channel = self.bot.get_channel(
+                        self.config["leaderboard_channel_id"]
+                    )
                     # Logic for the leaderboard messages
                     if leaderboard_length == 0:
                         await challenge_channel.send(
@@ -168,7 +186,9 @@ class GeneralCommands(commands.Cog):
             )
             return
 
-        start_time = start_time = datetime.datetime.strptime(challenge_data["start_time"], '%Y-%m-%d %H:%M:%S')
+        start_time = start_time = datetime.datetime.strptime(
+            challenge_data["start_time"], "%Y-%m-%d %H:%M:%S"
+        )
         current_time = datetime.datetime.utcnow()
 
         hint_time = start_time + datetime.timedelta(hours=6)
@@ -178,7 +198,9 @@ class GeneralCommands(commands.Cog):
         time_to_end = end_time - current_time
 
         if current_time > end_time:
-            await interaction.response.send_message("The challenge has already ended.", ephemeral=True)
+            await interaction.response.send_message(
+                "The challenge has already ended.", ephemeral=True
+            )
             return
 
         if len_leaderboard == 0 and challenge_data["hints_released"] != 0:
@@ -194,7 +216,9 @@ class GeneralCommands(commands.Cog):
             minutes_end, seconds_end = divmod(remainder_end, 60)
             end_msg = f"Time left for challenge end: {int(hours_end)}:{int(minutes_end):02}:{int(seconds_end):02}"
 
-            await interaction.response.send_message(f"{hint_msg}\n{end_msg}", ephemeral=True)
+            await interaction.response.send_message(
+                f"{hint_msg}\n{end_msg}", ephemeral=True
+            )
 
     @discord.app_commands.command(
         name="feedback", description="Submit feedback, bugs, or suggestions."
@@ -227,11 +251,15 @@ class GeneralCommands(commands.Cog):
 
         for rating in rating_data:
             if rating[0] == interaction.user.id:
-                await interaction.response.send_message("You have already rated this challenge!", ephemeral=True)
+                await interaction.response.send_message(
+                    "You have already rated this challenge!", ephemeral=True
+                )
                 return
 
         view = RateView()
-        await interaction.response.send_message("Rate today's challenge:", view=view, ephemeral=True)
+        await interaction.response.send_message(
+            "Rate today's challenge:", view=view, ephemeral=True
+        )
 
 
 async def setup(bot) -> None:

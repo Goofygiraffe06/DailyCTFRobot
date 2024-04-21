@@ -25,20 +25,21 @@ print(pyfiglet.figlet_format("DailyCTF Robot"))
 async def main():
     async with bot:
         # Load cogs
-        for filename in os.listdir('./cogs'):
+        for filename in os.listdir("./cogs"):
             # utils.py is a non cog file and used to import neccesary functions
             if (
-                filename.endswith('.py')
-                and filename != '__init__.py'
-                and filename != 'utils.py'
-                and filename != 'db_utils.py'
+                filename.endswith(".py")
+                and filename != "__init__.py"
+                and filename != "utils.py"
+                and filename != "db_utils.py"
             ):
                 try:
-                    await bot.load_extension(f'cogs.{filename[:-3]}')
+                    await bot.load_extension(f"cogs.{filename[:-3]}")
                     logging.info(f"Loaded {filename} cog successfully.")
                 except Exception as e:
                     logging.error(f"Error loading {filename}: {e}")
-        await bot.start(os.environ['token'])
+        await bot.start(os.environ["token"])
+
 
 try:
     asyncio.run(main())

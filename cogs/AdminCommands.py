@@ -14,6 +14,7 @@ from .db_utils import (
     fetch_challenge_data,
     fetch_leaderboard_data,
     remove_challenge_data,
+    generate_title
 )
 import logging
 import datetime
@@ -31,15 +32,6 @@ logging.getLogger("flask.app").setLevel(logging.ERROR)
 con = db_init()
 config = fetch_challenge_data(con)
 
-
-def generate_title():
-    config = fetch_challenge_data(con)
-    if config and "day" in config:
-        return f"Set a Challenge for Day {config['day']+1}"
-    else:
-        return "Set a Challenge"
-
-
 class AttachmentsButton(discord.ui.View):
     def __init__(self, attachment_url):
         super().__init__()
@@ -51,10 +43,10 @@ class AttachmentsButton(discord.ui.View):
 
 # Modal Class to handle the setchallenge
 
-
-class SetChallengeModal(discord.ui.Modal, title=generate_title()):
+class SetChallengeModal(discord.ui.Modal):
     def __init__(self, bot, config):
-        super().__init__()
+        #super().__init__()
+        super().__init__(title=generate_title(con))
         self.bot = bot
         self.config = config
 

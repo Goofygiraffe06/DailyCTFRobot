@@ -275,3 +275,20 @@ def fetch_rating(con):
 
     except sqlite3.Error as e:
         logging.error(f"Error fetching table ratings: {e}")
+
+def generate_title(con):
+    try:
+        cur = con.cursor()
+        
+        cur.execute("SELECT * FROM sqlite_sequence")
+        day = cur.fetchone()
+        
+        logging.info(day)
+        if day:
+            return f"Set a Challenge for Day {day[1] + 1}"
+        else:
+            return "Set a Challenge"
+    
+    except sqlite3.Error as e:
+        logging.error(f"Error generating title: {e}")
+

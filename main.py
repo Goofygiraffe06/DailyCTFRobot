@@ -4,7 +4,6 @@ import discord
 import logging
 from discord.ext import commands
 import os
-from keep_alive import keep_alive
 import asyncio
 import pyfiglet
 
@@ -40,9 +39,6 @@ async def main():
                 except Exception as e:
                     logging.error(f"Error loading {filename}: {e}")
         await bot.start(os.environ['token'])
-
-
-keep_alive()
 
 try:
     asyncio.run(main())

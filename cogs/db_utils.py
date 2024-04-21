@@ -215,10 +215,13 @@ def fetch_challenge_data(con):
 def remove_challenge_data(con):
     try:
         cur = con.cursor()
+        
+        cur.execute("BEGIN TRANSACTION")
 
         cur.execute("DELETE FROM challenge_data")
         cur.execute("DELETE FROM leaderboard")
         cur.execute("DELETE FROM ratings")
+        con.commit()
         logging.info("Deleted table challenge_data successfully.")
 
     except sqlite3.Error as e:

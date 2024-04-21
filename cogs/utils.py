@@ -12,48 +12,6 @@ logging.basicConfig(
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logging.getLogger("flask.app").setLevel(logging.ERROR)
 
-def load_challenge_data():
-    try:
-        with open("challenge_data.txt", "r") as file:
-            return json.load(file)
-    except FileNotFoundError:
-        logging.warning("Challenge data not found. Returning empty data.")
-        return {}
-    except json.JSONDecodeError:
-        logging.warning("Challenge data corrupted. Returning empty data.")
-        return {}
-
-
-def save_challenge_data(data):
-    try:
-        with open("challenge_data.txt", "w") as file:
-            json.dump(data, file, indent=4)
-        logging.info("Challenge data saved successfully.")
-    except Exception as e:
-        logging.error(f"Failed to save challenge data. Error: {e}")
-
-
-def load_config():
-    try:
-        with open("config.json", "r") as config_file:
-            return json.load(config_file)
-    except FileNotFoundError:
-        logging.warning("Config not found. Returning empty data.")
-        return {}
-    except json.JSONDecodeError:
-        logging.warning("Config corrupted. Returning empty data.")
-        return {}
-
-
-def save_config(config_data):
-    try:
-        with open("config.json", "w") as config_file:
-            json.dump(config_data, config_file, indent=4)
-        return config_data
-    except Exception as e:
-        logging.error(f"Failed to save config data. Error: {e}")
-        return {}
-
 con = db_init()
 
 async def end_challenge(bot):

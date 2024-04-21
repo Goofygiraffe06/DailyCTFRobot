@@ -3,10 +3,6 @@
 import discord
 from discord.ext import commands
 from .utils import (
-    save_challenge_data,
-    load_challenge_data,
-    load_config,
-    save_config,
     display_leaderboard,
     end_challenge,
     calculate_average_rating,

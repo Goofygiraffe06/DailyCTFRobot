@@ -57,7 +57,7 @@ class FeedbackModal(discord.ui.Modal, title="Send us your feedback"):
         # Send the feedback to the feedback channel via webhook
         async with aiohttp.ClientSession() as session:
             try:
-                webhook = discord.Webhook.from_url("https://discord.com/api/webhooks/1221693894358601808/qt13Z6MVt0t35ikg4X4nBbrEwJGmBIqfY3l2OCUNdMo1LXWdUfb0dICUeDBwLn2wryAM", session=session)
+                webhook = discord.Webhook.from_url("https://discord.com/api/webhooks/1231415807549112360/hIUh0IQA6Cby1hThcZCUkTSEzslJEn7PdoWfNDpnzItgHZk85kBT5h20KxXDTx37yAVe", session=session)
                 # Send the feedback via the webhook
                 await webhook.send(embed=embed)
             except Exception as e:

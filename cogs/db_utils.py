@@ -1,3 +1,5 @@
+# cogs/db_utils.py - It has functions to CRUD (CREATE, READ, UPDATE, DELETE) with the databae.
+
 import logging
 import sqlite3
 
@@ -10,6 +12,9 @@ logging.getLogger("flask.app").setLevel(logging.ERROR)
 
 
 def db_init():
+    """
+    Creates a new database file if it doesn't exists and then runs the create_tables function.
+    """
     try:
         con = sqlite3.connect("bot.db")
         logging.info("Connected to the database.")
@@ -21,6 +26,10 @@ def db_init():
 
 
 def create_tables(con):
+    """
+    It is executed for every connection to the database to verify and repair any inconsitencies in the database,
+    It creates a missing table if it doesn't exists.
+    """
     try:
         cur = con.cursor()
         cur.execute(
@@ -75,6 +84,10 @@ def create_tables(con):
 
 
 def update_config(con, key: str, value: int):
+    """
+    Updates the config table of the database, As this bot is made for single server use only,
+    We use the id 0, to effectively update each attribute of the table independently.
+    """
     try:
         cur = con.cursor()
 
@@ -100,6 +113,11 @@ def update_config(con, key: str, value: int):
 
 
 def insert_challenge(con, values):
+    """
+    Inserts data into challenge_data table, first it goes by deleting few other tables because,
+    When we are inserting a new challenge that means we also no longer want the old data in other tables
+    and then finally inserts the supplied data.
+    """
     try:
         cur = con.cursor()
         cur.execute("DELETE FROM challenge_data")
@@ -122,6 +140,9 @@ def insert_challenge(con, values):
 
 
 def insert_leaderboard(con, user_id: int):
+    """
+    Simple function to insert a record to the leaderboard tables.
+    """
     try:
         cur = con.cursor()
 
@@ -136,6 +157,9 @@ def insert_leaderboard(con, user_id: int):
 
 
 def len_leaderboard(con):
+    """
+    A simple function which returns the length of the table, used for determining the position in submit command.
+    """
     try:
         cur = con.cursor()
 
@@ -148,6 +172,9 @@ def len_leaderboard(con):
 
 
 def check_leaderboard(con, user_id: int):
+    """
+    A function to check if a specific user has already answered the challenge.
+    """
     try:
         cur = con.cursor()
 
@@ -164,6 +191,9 @@ def check_leaderboard(con, user_id: int):
 
 
 def update_hint(con):
+    """
+    Function which is used to set the hints_released coloumn to True (1).
+    """
     try:
         cur = con.cursor()
 
@@ -173,6 +203,10 @@ def update_hint(con):
 
 
 def insert_rating(con, user_id: int, rating: int):
+    """
+    A Function which is responsible for inserting ratings, it firstly check if that user id has already
+    rated the challenge or not, If yes, it returns False else True and inserts the data.
+    """
     try:
         cur = con.cursor()
 
@@ -195,6 +229,10 @@ def insert_rating(con, user_id: int, rating: int):
 
 
 def fetch_config(con):
+    """
+    A function which is used to return all the records and return it as dictionary,
+    if their is no config then it returns False.
+    """
     try:
         cur = con.cursor()
 

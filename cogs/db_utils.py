@@ -283,7 +283,6 @@ def generate_title(con):
         cur.execute("SELECT * FROM sqlite_sequence")
         day = cur.fetchone()
         
-        logging.info(day)
         if day:
             return f"Set a Challenge for Day {day[1] + 1}"
         else:

@@ -147,6 +147,23 @@ class TestDatabaseFunctions(unittest.TestCase):
         self.assertIsNotNone(fetched_data, "Expected config data when updated.")
         self.assertEqual(fetched_data[0], value)
 
+    def test_fetch_challenge_data_not_exist(self):
+        """
+        Test fetching challenge data when no data exists.
+        """
+        fetched_data = fetch_challenge_data(self.con)
+        self.assertIsNone(fetched_data, "Expected None when no challenge data exists.")
+
+    def test_update_config_invalid_key(self):
+        """
+        Test updating config with an invalid key.
+        """
+        # Test updating config with an invalid key
+        key = 'invalid_key'
+        value = 12345
+        result = update_config(self.con, key, value)
+        self.assertFalse(result, "Expected False when updating config with an invalid key.")
+
 if __name__ == '__main__':
     unittest.main()
 
